@@ -319,6 +319,17 @@
             margin-left: 15px;
             color: #ffc857;
         }
+        .question-timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: #ffaa33;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 12px;
+            border-radius: 24px;
+            display: inline-block;
+            margin-left: 10px;
+        }
         .bot-turn-message {
             margin-top: 12px;
             padding: 8px;
@@ -379,6 +390,23 @@
             border-radius: 24px;
             display: inline-block;
         }
+        .options-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .options-buttons button {
+            background: #2a2a36;
+            color: #ffdd99;
+            border: 1px solid #ffc857;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+        .options-buttons button:hover {
+            background: #ffc857;
+            color: #1e1e2a;
+        }
     </style>
 </head>
 <body>
@@ -401,7 +429,6 @@
     </div>
 </div>
 
-<!-- Главная вкладка -->
 <div id="homeTab" class="tab-block active">
     <div class="glass-card">
         <h2>🎲 Тайна Золотого Дракона</h2>
@@ -413,7 +440,7 @@
         • Выберите количество ботов (1–3) и уровень сложности.<br>
         • Ваша задача — обыграть компьютерных соперников, накапливая жетоны и быстрее всех добраться до финиша.<br>
         • Ходите по очереди, бросайте кубик и принимайте финансовые решения.<br>
-        • На ход даётся 60 секунд. Не успели — ход пропускается.<br>
+        • На ход даётся 60 секунд. На ответ на вопрос — 120 секунд.<br>
         • Боты действуют автоматически в зависимости от сложности.<br>
         • Если у вас кончились деньги — вы банкрот и пропускаете 3 хода, затем возвращаетесь на старт с 5 монетами (жетоны сохраняются).<br>
         • Если вы попали на Ярмарку, но у вас меньше нужного количества разных жетонов — возвращайтесь на старт и продолжайте путь!<br>
@@ -421,7 +448,6 @@
     </div>
 </div>
 
-<!-- Вкладка игры -->
 <div id="gameTab" class="tab-block">
     <div class="glass-card" id="setupPanel">
         <h2>🏆 Новая игра</h2>
@@ -470,19 +496,17 @@
     </div>
 </div>
 
-<!-- Контакты -->
 <div id="contactsTab" class="tab-block">
     <div class="glass-card">
         <h3>📬 Контакты</h3>
-        <p>✉️ game@denezhkinsk.ru <br>📱 Telegram: @fin_lab_school</p>
+        <p>✉️ cubics83@gmail.com <br>📱 Telegram: @thomson_hxted</p>
         <p>🎓 Проект финансовой грамотности для младших классов</p>
     </div>
 </div>
 
-<footer>© Денежкинск · учимся управлять мечтами</footer>
+<footer>© Денежкинск · Учимся управлять мечтами</footer>
 
 <script>
-    // ====================== КОНФИГУРАЦИЯ ИГРЫ (расширенная) ======================
     const GAME_CONFIG = {
         baseCellTypes: [
             { type: "guild", name: "🏛️ Гильдия мастеров", desc: "Здесь вы можете получить жетон «Мастер», выполнив экономическое задание." },
@@ -491,39 +515,33 @@
             { type: "dream", name: "🐷 Фабрика мечты", desc: "Копите на мечту! Когда накопите достаточно, получите жетон «Мечтатель»." },
             { type: "surprise", name: "🎲 Вихрь сюрпризов", desc: "Случайное событие. Может принести монеты или жетон Дружбы." }
         ],
-        displayCounts: {
-            guild: 1,
-            shop: 3,
-            bank: 1,
-            dream: 1,
-            surprise: 1
-        },
+        displayCounts: { guild: 1, shop: 3, bank: 1, dream: 1, surprise: 1 },
         guildTasks: [
-            { name: "🧮 Экономический логист", task: "Посчитай свои деньги: сколько у тебя всего? (деньги в руке + деньги в банке). Напиши сумму." },
-            { name: "📊 Финансовый аналитик", task: "Сколько процентов от твоих денег составляют 2 монеты? (округли до целого). Напиши число." },
-            { name: "💰 Кассир", task: "Сколько монет нужно добавить до 20? Напиши разницу." },
-            { name: "📈 Инвестор", task: "Твои деньги выросли на 10%. Сколько у тебя станет? (округли вниз). Напиши число." },
-            { name: "🛍️ Шопоголик", task: "Если ты купишь товар за 6 монет и заплатишь 10, сколько сдачи получишь? Напиши число." },
-            { name: "🏦 Банкир", task: "Ты положил в банк 8 монет, а через год банк добавил 20% от вклада. Сколько стало? Напиши число." },
-            { name: "📅 Бюджетник", task: "Ты получаешь 12 монет в месяц, тратишь 7. Сколько останется за 3 месяца? Напиши число." },
-            { name: "🍕 Ресторатор", task: "Пицца стоит 15 монет, у тебя 40. Сколько пицц можно купить и сколько сдачи останется? Напиши через пробел: количество и сдачу." },
-            { name: "🎁 Подарочный эксперт", task: "У тебя 23 монеты. Хочешь купить другу подарок за 8 монет и себе шоколадку за 5. Хватит ли денег? Напиши «да» или «нет»." },
-            { name: "📉 Финансист", task: "Твои деньги уменьшились на 15%, было 20 монет. Сколько стало? Напиши число." },
-            { name: "📝 Сметчик", task: "Стоимость школьных принадлежностей: ручка 2, тетрадь 3, пенал 7. Сколько нужно денег, чтобы купить всё? Напиши сумму." },
-            { name: "💸 Тратильщик", task: "У тебя 30 монет. Ты потратил 12 в магазине и 5 в кафе. Сколько осталось? Напиши число." },
-            { name: "💰 Копилка", task: "В копилке 15 монет. Каждый день ты добавляешь по 3 монеты. Сколько будет через 4 дня? Напиши число." },
-            { name: "📈 Акционер", task: "Ты купил акции за 20 монет, они выросли на 25%. Сколько они стоят теперь? Напиши число." },
-            { name: "🏦 Депозит", task: "Банк даёт 10% годовых. Сколько будет через год, если положить 50 монет? Напиши число." },
-            { name: "🧮 Менеджер", task: "У тебя 45 монет. Раздели их поровну между тремя друзьями. Сколько получит каждый? Напиши число." },
-            { name: "📊 Аналитик", task: "Ты заработал 24 монеты за 4 дня. Сколько монет в день в среднем? Напиши число." },
-            { name: "💰 Экономист", task: "Сколько будет 8 + 7 × 2? Напиши число." },
-            { name: "📈 Брокер", task: "Курс монеты вырос с 10 до 12. На сколько процентов вырос курс? Напиши число." },
-            { name: "🎯 Целитель", task: "Тебе нужно накопить 100 монет. Уже есть 35. Сколько ещё нужно? Напиши число." },
-            { name: "🛒 Покупатель", task: "В магазине скидка 20% на товар за 25 монет. Сколько стоит товар со скидкой? Напиши число." },
-            { name: "💳 Кредитор", task: "Ты взял в долг 12 монет и вернул 15. Сколько процентов переплаты? Напиши число." },
-            { name: "📉 Инфляция", task: "Цены выросли на 10%, а твоя зарплата была 30. Чтобы купить столько же, сколько раньше, какая зарплата нужна? Напиши число." },
-            { name: "🏦 Вкладчик", task: "Вклад 80 монет под 5% годовых. Сколько процентов принесёт за год? Напиши число." },
-            { name: "📝 Бухгалтер", task: "Сложи все цифры: 5, 8, 3, 7, 2. Напиши сумму." }
+            { name: "🧮 Экономический логист", task: "Посчитай свои деньги: сколько у тебя всего? (деньги в руке + деньги в банке)", correct: (p) => p.money + p.bankMoney },
+            { name: "📊 Финансовый аналитик", task: "Сколько процентов от твоих денег составляют 2 монеты? (округли до целого)", correct: (p) => Math.round((2 / p.money) * 100) },
+            { name: "💰 Кассир", task: "Сколько монет нужно добавить до 20?", correct: (p) => 20 - p.money },
+            { name: "📈 Инвестор", task: "Твои деньги выросли на 10%. Сколько у тебя станет? (округли вниз)", correct: (p) => Math.floor(p.money * 1.1) },
+            { name: "🛍️ Шопоголик", task: "Если ты купишь товар за 6 монет и заплатишь 10, сколько сдачи получишь?", correct: () => 4 },
+            { name: "🏦 Банкир", task: "Ты положил в банк 8 монет, а через год банк добавил 20% от вклада. Сколько стало?", correct: () => 10 },
+            { name: "📅 Бюджетник", task: "Ты получаешь 12 монет в месяц, тратишь 7. Сколько останется за 3 месяца?", correct: () => 15 },
+            { name: "🍕 Ресторатор", task: "Пицца стоит 15 монет, у тебя 40. Сколько пицц можно купить и сколько сдачи останется?", correct: (p) => ({ num: Math.floor(40/15), rest: 40%15 }) },
+            { name: "🎁 Подарочный эксперт", task: "У тебя 23 монеты. Хочешь купить другу подарок за 8 монет и себе шоколадку за 5. Хватит ли денег?", correct: () => true },
+            { name: "📉 Финансист", task: "Твои деньги уменьшились на 15%, было 20 монет. Сколько стало?", correct: () => 17 },
+            { name: "📝 Сметчик", task: "Стоимость школьных принадлежностей: ручка 2, тетрадь 3, пенал 7. Сколько нужно денег, чтобы купить всё?", correct: () => 12 },
+            { name: "💸 Тратильщик", task: "У тебя 30 монет. Ты потратил 12 в магазине и 5 в кафе. Сколько осталось?", correct: () => 13 },
+            { name: "💰 Копилка", task: "В копилке 15 монет. Каждый день ты добавляешь по 3 монеты. Сколько будет через 4 дня?", correct: () => 27 },
+            { name: "📈 Акционер", task: "Ты купил акции за 20 монет, они выросли на 25%. Сколько они стоят теперь?", correct: () => 25 },
+            { name: "🏦 Депозит", task: "Банк даёт 10% годовых. Сколько будет через год, если положить 50 монет?", correct: () => 55 },
+            { name: "🧮 Менеджер", task: "У тебя 45 монет. Раздели их поровну между тремя друзьями. Сколько получит каждый?", correct: () => 15 },
+            { name: "📊 Аналитик", task: "Ты заработал 24 монеты за 4 дня. Сколько монет в день в среднем?", correct: () => 6 },
+            { name: "💰 Экономист", task: "Сколько будет 8 + 7 × 2?", correct: () => 22 },
+            { name: "📈 Брокер", task: "Курс монеты вырос с 10 до 12. На сколько процентов вырос курс?", correct: () => 20 },
+            { name: "🎯 Целитель", task: "Тебе нужно накопить 100 монет. Уже есть 35. Сколько ещё нужно?", correct: () => 65 },
+            { name: "🛒 Покупатель", task: "В магазине скидка 20% на товар за 25 монет. Сколько стоит товар со скидкой?", correct: () => 20 },
+            { name: "💳 Кредитор", task: "Ты взял в долг 12 монет и вернул 15. Сколько процентов переплаты?", correct: () => 25 },
+            { name: "📉 Инфляция", task: "Цены выросли на 10%, а твоя зарплата была 30. Чтобы купить столько же, сколько раньше, какая зарплата нужна?", correct: () => 33 },
+            { name: "🏦 Вкладчик", task: "Вклад 80 монет под 5% годовых. Сколько процентов принесёт за год?", correct: () => 4 },
+            { name: "📝 Бухгалтер", task: "Сложи все цифры: 5, 8, 3, 7, 2.", correct: () => 25 }
         ],
         shopGoods: [
             { name: "🥖 Хлеб (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
@@ -533,78 +551,19 @@
             { name: "🍦 Мороженое (Хочу)", cost: 2, need: false, desc: "Желаемый товар. Жетон не даёт." },
             { name: "🥛 Молоко (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
             { name: "🍎 Яблоки (Надо)", cost: 3, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🎮 Игровая приставка (Хочу)", cost: 15, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🧥 Куртка (Надо)", cost: 8, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🎧 Наушники (Хочу)", cost: 6, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🧴 Шампунь (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🎒 Рюкзак (Надо)", cost: 7, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🍕 Пицца (Хочу)", cost: 6, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "📱 Чехол для телефона (Хочу)", cost: 4, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🧦 Носки (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🧃 Сок (Хочу)", cost: 2, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "📝 Тетрадь (Надо)", cost: 1, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "✏️ Ручка (Надо)", cost: 1, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🖍️ Набор фломастеров (Хочу)", cost: 5, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🎲 Настольная игра (Хочу)", cost: 8, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🔋 Батарейки (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🧸 Конструктор (Хочу)", cost: 10, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🧣 Шарф (Надо)", cost: 4, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🧢 Кепка (Хочу)", cost: 5, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🧴 Крем (Надо)", cost: 3, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." }
+            { name: "🎮 Игровая приставка (Хочу)", cost: 15, need: false, desc: "Желаемый товар. Жетон не даёт." }
         ],
         bankRiddles: [
-            { question: "Что можно купить, но нельзя продать?", answers: ["здоровье", "здоровье"] },
-            { question: "Что дороже всего на свете?", answers: ["здоровье", "жизнь", "счастье"] },
-            { question: "Что не купишь ни за какие деньги?", answers: ["здоровье", "время", "любовь", "дружбу"] },
-            { question: "Какая монета самая крупная в обиходе?", answers: ["10", "десять", "10 рублей"] },
-            { question: "Как называются деньги, которые откладывают на будущее?", answers: ["сбережения", "накопления"] },
-            { question: "Что такое инфляция?", answers: ["рост цен", "обесценивание денег"] },
-            { question: "Что такое бюджет?", answers: ["план доходов и расходов", "план расходов"] },
-            { question: "Что означает слово «кредит»?", answers: ["долг", "заём", "взаймы"] },
-            { question: "Что такое проценты по вкладу?", answers: ["доход", "прибыль", "дополнительные деньги"] },
-            { question: "Что выгоднее: купить со скидкой или на распродаже?", answers: ["скидка", "распродажа"] },
-            { question: "Какая пословица про деньги?", answers: ["копейка рубль бережёт", "деньги счёт любят"] },
-            { question: "Что такое бартер?", answers: ["обмен товарами без денег", "обмен"] },
-            { question: "Какая валюта в России?", answers: ["рубль", "рубли"] },
-            { question: "Что такое налоги?", answers: ["платежи государству", "обязательные платежи"] },
-            { question: "Что такое депозит?", answers: ["вклад в банк", "деньги под проценты"] },
-            { question: "Что такое кредитная карта?", answers: ["деньги в долг", "заёмные средства"] },
-            { question: "Что такое доход?", answers: ["деньги, которые приходят", "заработок"] },
-            { question: "Что такое расход?", answers: ["деньги, которые уходят", "траты"] },
-            { question: "Что такое экономия?", answers: ["бережливость", "сбережение"] },
-            { question: "Что такое зарплата?", answers: ["оплата труда", "деньги за работу"] },
-            { question: "Что такое стипендия?", answers: ["выплата студентам", "деньги за учёбу"] },
-            { question: "Что такое пенсия?", answers: ["выплата пожилым", "государственное пособие"] },
-            { question: "Что такое наследство?", answers: ["имущество от родственников", "переданные деньги"] },
-            { question: "Что такое инвестиции?", answers: ["вложения для прибыли", "деньги в дело"] },
-            { question: "Что такое финансовая подушка?", answers: ["сбережения на случай", "запас денег"] }
+            { question: "Что можно купить, но нельзя продать?", options: ["здоровье", "игрушку", "книгу", "еду"], correct: "здоровье" },
+            { question: "Что дороже всего на свете?", options: ["здоровье", "золото", "бриллианты", "дом"], correct: "здоровье" },
+            { question: "Что не купишь ни за какие деньги?", options: ["здоровье", "время", "счастье", "дружбу"], correct: ["здоровье","время","счастье","дружбу"] },
+            { question: "Какая монета самая крупная в обиходе?", options: ["10 рублей", "5 рублей", "2 рубля", "1 рубль"], correct: "10 рублей" },
+            { question: "Как называются деньги, которые откладывают на будущее?", options: ["сбережения", "расходы", "доходы", "налоги"], correct: "сбережения" },
+            { question: "Что такое инфляция?", options: ["рост цен", "падение цен", "безработица", "налоги"], correct: "рост цен" }
         ],
         dreamTargets: [
-            { name: "Велосипед", cost: 25 },
-            { name: "Планшет", cost: 40 },
-            { name: "Робот-игрушка", cost: 30 },
-            { name: "Аквапарк", cost: 35 },
-            { name: "Настольная игра", cost: 20 },
-            { name: "Самокат", cost: 18 },
-            { name: "Конструктор", cost: 22 },
-            { name: "Скейтборд", cost: 28 },
-            { name: "Новый телефон", cost: 45 },
-            { name: "Беспроводные наушники", cost: 25 },
-            { name: "Фотоаппарат", cost: 35 },
-            { name: "Поездка в зоопарк", cost: 15 },
-            { name: "Книжная полка", cost: 20 },
-            { name: "Мягкая игрушка", cost: 12 },
-            { name: "Роликовые коньки", cost: 32 },
-            { name: "Бассейн", cost: 28 },
-            { name: "Кинотеатр", cost: 10 },
-            { name: "Пицца на всех", cost: 14 },
-            { name: "Мороженое на месяц", cost: 8 },
-            { name: "Курсы английского", cost: 30 },
-            { name: "Спортивная форма", cost: 22 },
-            { name: "Набор для творчества", cost: 16 },
-            { name: "Палатка", cost: 24 },
-            { name: "Радиоуправляемая машинка", cost: 26 },
-            { name: "Сборник любимых книг", cost: 18 }
+            { name: "Велосипед", cost: 25 }, { name: "Планшет", cost: 40 }, { name: "Робот-игрушка", cost: 30 },
+            { name: "Аквапарк", cost: 35 }, { name: "Настольная игра", cost: 20 }, { name: "Самокат", cost: 18 }
         ],
         surpriseEvents: [
             { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
@@ -617,21 +576,7 @@
             { text: "🍦 Угостил мороженым: -1 монета", deltaMoney: -1, type: "bad" },
             { text: "🎁 Подарок от бабушки: +2 монеты", deltaMoney: 2, type: "good" },
             { text: "🧸 Купил игрушку в подарок: -3 монеты, получил жетон Дружбы", type: "choiceGift" },
-            { text: "🏆 Получил грамоту за финансовую грамотность: +1 жетон Мудрость", type: "tokenWise" },
-            { text: "📈 Удачная инвестиция: +2 монеты", deltaMoney: 2, type: "good" },
-            { text: "📉 Плохая инвестиция: -1 монета", deltaMoney: -1, type: "bad" },
-            { text: "🎟️ Выиграл билет в кино: +1 монета", deltaMoney: 1, type: "good" },
-            { text: "📱 Нашёл старый телефон и продал: +3 монеты", deltaMoney: 3, type: "good" },
-            { text: "🔋 Купил новые батарейки: -1 монета", deltaMoney: -1, type: "bad" },
-            { text: "🍕 Угостил друга пиццей: -2 монеты, получил жетон Дружбы", type: "choiceGift" },
-            { text: "📖 Выиграл в конкурсе книгу: +1 жетон Мудрость", type: "tokenWise" },
-            { text: "🛒 Потратил на распродаже: -4 монеты", deltaMoney: -4, type: "bad" },
-            { text: "🎂 Получил подарок на день рождения: +3 монеты", deltaMoney: 3, type: "good" },
-            { text: "🚲 Продал старый велосипед: +5 монет", deltaMoney: 5, type: "good" },
-            { text: "💧 Пролил сок на учебник: -1 монета", deltaMoney: -1, type: "bad" },
-            { text: "🧥 Потерял перчатку: -1 монета", deltaMoney: -1, type: "bad" },
-            { text: "📚 Нашёл учебник и вернул за вознаграждение: +2 монеты", deltaMoney: 2, type: "good" },
-            { text: "🤝 Помог соседу за 2 монеты: +2 монеты", deltaMoney: 2, type: "good" }
+            { text: "🏆 Получил грамоту за финансовую грамотность: +1 жетон Мудрость", type: "tokenWise" }
         ]
     };
 
@@ -650,18 +595,10 @@
         for (let i = 0; i < repeats; i++) {
             let shuffledTypes = shuffleArray([...baseTypes]);
             for (let type of shuffledTypes) {
-                allCells.push({
-                    name: type.name,
-                    type: type.type,
-                    desc: type.desc
-                });
+                allCells.push({ name: type.name, type: type.type, desc: type.desc });
             }
         }
-        allCells.push({
-            name: "🎪 Ярмарка талантов",
-            type: "fair",
-            desc: "Финиш. Побеждает тот, кто набрал нужное количество разных жетонов. Если жетонов меньше — возвращаетесь на старт."
-        });
+        allCells.push({ name: "🎪 Ярмарка талантов", type: "fair", desc: "Финиш. Побеждает тот, кто набрал нужное количество разных жетонов. Если жетонов меньше — возвращаетесь на старт." });
         return allCells;
     }
 
@@ -691,34 +628,20 @@
         return new Promise(resolve => {
             const container = document.createElement('div');
             container.className = 'dice-container';
-            container.innerHTML = `
-                <div class="dice">🎲</div>
-                <div class="dice-number">${rollValue}</div>
-            `;
+            container.innerHTML = `<div class="dice">🎲</div><div class="dice-number">${rollValue}</div>`;
             document.body.appendChild(container);
             playSound("success");
-            setTimeout(() => {
-                container.remove();
-                resolve();
-            }, 700);
+            setTimeout(() => { container.remove(); resolve(); }, 700);
         });
     }
 
-    // ---------- Игровой движок ----------
     class GameController {
-        constructor(playersArray, cells, requireTokens) {
+        constructor(playersArray, cells, requireTokens, mode) {
             this.players = playersArray.map((p, idx) => ({
-                id: idx,
-                name: p.name,
-                isBot: p.isBot || false,
-                money: 10,
-                position: 0,
-                tokens: [],
-                dreamFund: 0,
-                dreamTarget: null,
-                bankMoney: 0,
-                hasFinished: false,
-                skipTurns: 0      // количество пропускаемых ходов (банкротство)
+                id: idx, name: p.name, isBot: p.isBot || false,
+                money: mode === 'short' ? 100 : 200,
+                position: 0, tokens: [], dreamFund: 0, dreamTarget: null,
+                bankMoney: 0, hasFinished: false, skipTurns: 0
             }));
             this.cells = cells;
             this.currentTurn = 0;
@@ -727,36 +650,40 @@
             this.waitingForAction = false;
             this.difficulty = null;
             this.timer = null;
+            this.questionTimer = null;
             this.turnTimeSeconds = 60;
+            this.questionTimeSeconds = 120;
             this.requireTokens = requireTokens;
+            this.mode = mode; // 'short' or 'long'
         }
 
         getCurrentPlayer() { return this.players[this.currentTurn]; }
 
-        getUniqueTokensCount(player) {
-            return new Set(player.tokens).size;
+        getUniqueTokensCount(player) { return new Set(player.tokens).size; }
+
+        getRewardMultiplier() {
+            return this.mode === 'short' ? 1.5 : 2.0;
         }
 
-        // Проверка на банкротство после изменения денег
+        getReward(amount) {
+            return Math.floor(amount * this.getRewardMultiplier());
+        }
+
         checkBankruptcy(player, delta, container) {
             if (player.money <= 0 && delta < 0 && player.skipTurns === 0) {
                 player.money = 0;
                 player.skipTurns = 3;
-                if (container) {
-                    container.innerHTML += `<p>💸 ${player.name} обанкротился! Пропускает 3 хода, затем вернётся на старт с 5 монетами.</p>`;
-                }
+                if (container) container.innerHTML += `<p>💸 ${player.name} обанкротился! Пропускает 3 хода, затем вернётся на старт с 5 монетами.</p>`;
                 playSound("error");
                 return true;
             }
             return false;
         }
 
-        // Воскрешение после пропуска ходов
         respawnPlayer(player) {
             player.money = 5;
             player.position = 0;
             player.skipTurns = 0;
-            // жетоны остаются
             const container = document.getElementById("actionDetails");
             if (container) container.innerHTML += `<p>🌟 ${player.name} возвращается на старт с 5 монетами! Жетоны сохранены.</p>`;
             playSound("success");
@@ -789,6 +716,33 @@
             if (timerElement) timerElement.innerText = "";
         }
 
+        startQuestionTimer(container, resolve, onTimeout) {
+            this.stopQuestionTimer();
+            let timeLeft = this.questionTimeSeconds;
+            const timerSpan = document.createElement('span');
+            timerSpan.className = 'question-timer';
+            timerSpan.innerText = `⏱️ ответ: ${timeLeft}с`;
+            container.appendChild(timerSpan);
+            this.questionTimer = setInterval(() => {
+                timeLeft--;
+                timerSpan.innerText = `⏱️ ответ: ${timeLeft}с`;
+                if (timeLeft <= 0) {
+                    this.stopQuestionTimer();
+                    if (timerSpan) timerSpan.remove();
+                    if (onTimeout) onTimeout();
+                }
+            }, 1000);
+            this.questionTimerContainer = timerSpan;
+        }
+
+        stopQuestionTimer() {
+            if (this.questionTimer) {
+                clearInterval(this.questionTimer);
+                this.questionTimer = null;
+            }
+            if (this.questionTimerContainer && this.questionTimerContainer.remove) this.questionTimerContainer.remove();
+        }
+
         async skipTurn() {
             this.stopTurnTimer();
             if (!this.gameActive || this.waitingForAction) return;
@@ -804,7 +758,6 @@
             if (this.waitingForAction) return false;
             const player = this.getCurrentPlayer();
             if (player.hasFinished) { this.nextTurn(); return false; }
-            // Если игрок должен пропускать ходы
             if (player.skipTurns > 0) {
                 const detailsDiv = document.getElementById("actionDetails");
                 detailsDiv.innerHTML = `<p>⏳ ${player.name} банкрот, пропускает ход (осталось пропусков: ${player.skipTurns})</p>`;
@@ -857,63 +810,83 @@
             });
         }
 
-        addUniqueToken(player, token) {
-            if (!player.tokens.includes(token)) {
-                player.tokens.push(token);
+        addUniqueToken(player, token) { if (!player.tokens.includes(token)) player.tokens.push(token); }
+
+        generateGuildOptions(task, correctValue) {
+            let options = [correctValue];
+            if (typeof correctValue === 'number') {
+                while (options.length < 4) {
+                    let delta = Math.floor(Math.random() * 15) + 1;
+                    let candidate = correctValue + (Math.random() < 0.5 ? delta : -delta);
+                    if (candidate < 0) candidate = correctValue + delta;
+                    if (!options.includes(candidate)) options.push(candidate);
+                }
+            } else if (typeof correctValue === 'boolean') {
+                options = [correctValue ? "да" : "нет", correctValue ? "нет" : "да", "не знаю", "возможно"];
+            } else if (typeof correctValue === 'object' && correctValue.num !== undefined) {
+                let correctStr = `${correctValue.num} пиццы, ${correctValue.rest} сдачи`;
+                options = [correctStr, `${correctValue.num+1} пиццы, ${correctValue.rest-15} сдачи`, `${correctValue.num-1} пиццы, ${correctValue.rest+15} сдачи`, `1 пицца, 25 сдачи`];
             }
+            return shuffleArray(options);
         }
 
         guildAction(player, container, done) {
             const tasks = GAME_CONFIG.guildTasks;
             const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+            let correctValue = randomTask.correct(player);
             if (player.isBot) {
-                player.money += 5;
-                this.addUniqueToken(player, "Мастер");
-                container.innerHTML += `<p>🤖 ${player.name} выбрал ${randomTask.name} и получил +5 монет и жетон «Мастер»!</p>`;
+                let botAnswer = correctValue;
+                if (typeof correctValue === 'object') botAnswer = `${correctValue.num} пиццы, ${correctValue.rest} сдачи`;
+                if (randomTask.name.includes("Подарочный эксперт")) botAnswer = correctValue ? "да" : "нет";
+                if (Math.random() < (this.difficulty === 'easy' ? 0.5 : (this.difficulty === 'hard' ? 0.9 : 0.7))) {
+                    player.money += this.getReward(5);
+                    this.addUniqueToken(player, "Мастер");
+                    container.innerHTML += `<p>🤖 ${player.name} выбрал ${randomTask.name} и ответил верно! Получено ${this.getReward(5)} монет и жетон «Мастер»!</p>`;
+                } else {
+                    container.innerHTML += `<p>🤖 ${player.name} ошибся в задании. Правильный ответ: ${correctValue}.</p>`;
+                }
                 setTimeout(() => done(), 1500);
             } else {
                 container.innerHTML += `<p>🧾 Задание: ${randomTask.task}</p>`;
-                const answerBtn = document.createElement("button");
-                answerBtn.innerText = "Ответить";
-                answerBtn.onclick = () => {
-                    let ans = prompt("Введите ответ:");
-                    let correct = false;
-                    if (randomTask.name.includes("Экономический логист")) {
-                        const total = player.money + player.bankMoney;
-                        if (ans && parseInt(ans) === total) correct = true;
-                        else container.innerHTML += `<p>❌ Неверно. Правильный ответ: ${total}.</p>`;
-                    } else if (randomTask.name.includes("Финансовый аналитик")) {
-                        const percent = Math.round((2 / player.money) * 100);
-                        if (ans && parseInt(ans) === percent) correct = true;
-                        else container.innerHTML += `<p>❌ Неверно. Правильный ответ: ${percent}%.</p>`;
-                    } else if (randomTask.name.includes("Кассир")) {
-                        const diff = 20 - player.money;
-                        if (ans && parseInt(ans) === diff) correct = true;
-                        else container.innerHTML += `<p>❌ Неверно. Нужно добавить ${diff} монет.</p>`;
-                    } else if (randomTask.name.includes("Инвестор")) {
-                        const newMoney = Math.floor(player.money * 1.1);
-                        if (ans && parseInt(ans) === newMoney) correct = true;
-                        else container.innerHTML += `<p>❌ Неверно. Станет ${newMoney} монет.</p>`;
-                    }
-                    if (correct) {
-                        player.money += 5;
-                        this.addUniqueToken(player, "Мастер");
-                        container.innerHTML += `<p>✅ Верно! +5 монет и жетон «Мастер»! У вас ${player.money}💰</p>`;
-                        playSound("success");
-                    } else {
-                        playSound("error");
-                    }
-                    setTimeout(() => done(), 1500);
-                };
-                container.appendChild(answerBtn);
+                let options = this.generateGuildOptions(randomTask, correctValue);
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options-buttons';
+                this.startQuestionTimer(container, done, () => {
+                    container.innerHTML += `<p>⏰ Время вышло! Ход пропущен.</p>`;
+                    this.waitingForAction = false;
+                    done();
+                });
+                options.forEach(opt => {
+                    let btn = document.createElement('button');
+                    btn.innerText = String(opt);
+                    btn.onclick = () => {
+                        this.stopQuestionTimer();
+                        let isCorrect = false;
+                        if (typeof correctValue === 'number') isCorrect = (parseInt(opt) === correctValue);
+                        else if (typeof correctValue === 'boolean') isCorrect = ((opt === "да" && correctValue) || (opt === "нет" && !correctValue));
+                        else if (typeof correctValue === 'object' && correctValue.num !== undefined) isCorrect = (opt === `${correctValue.num} пиццы, ${correctValue.rest} сдачи`);
+                        else isCorrect = (String(opt) === String(correctValue));
+                        if (isCorrect) {
+                            player.money += this.getReward(5);
+                            this.addUniqueToken(player, "Мастер");
+                            container.innerHTML += `<p>✅ Верно! +${this.getReward(5)} монет и жетон «Мастер»! У вас ${player.money}💰</p>`;
+                            playSound("success");
+                        } else {
+                            container.innerHTML += `<p>❌ Неверно. Правильный ответ: ${correctValue}.</p>`;
+                            playSound("error");
+                        }
+                        setTimeout(() => done(), 1500);
+                    };
+                    optionsDiv.appendChild(btn);
+                });
+                container.appendChild(optionsDiv);
             }
         }
 
         shopAction(player, container, done) {
             const allGoods = GAME_CONFIG.shopGoods;
-            const count = GAME_CONFIG.displayCounts.shop;
             const shuffled = shuffleArray([...allGoods]);
-            const selectedGoods = shuffled.slice(0, count);
+            const selectedGoods = shuffled.slice(0, 3);
             if (player.isBot) {
                 const isHard = this.difficulty === "hard";
                 const isEasy = this.difficulty === "easy";
@@ -941,19 +914,23 @@
                     if (chosen.need) this.addUniqueToken(player, "Заботливый");
                     container.innerHTML += `<p>🤖 ${player.name} купил ${chosen.name}. Осталось ${player.money}💰</p>`;
                     if (chosen.need) container.innerHTML += `<p>🎖️ Получен жетон «Заботливый»!</p>`;
-                } else {
-                    container.innerHTML += `<p>🤖 ${player.name} не смог ничего купить.</p>`;
-                }
+                } else container.innerHTML += `<p>🤖 ${player.name} не смог ничего купить.</p>`;
                 if (player.money <= 0) this.checkBankruptcy(player, -1, container);
                 setTimeout(() => done(), 1500);
             } else {
-                container.innerHTML += `<p>Выберите товар (описание под кнопкой):</p>`;
+                container.innerHTML += `<p>Выберите товар:</p>`;
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options-buttons';
+                this.startQuestionTimer(container, done, () => {
+                    container.innerHTML += `<p>⏰ Время вышло! Ход пропущен.</p>`;
+                    this.waitingForAction = false;
+                    done();
+                });
                 selectedGoods.forEach(g => {
-                    let btn = document.createElement("button");
+                    let btn = document.createElement('button');
                     btn.innerText = `${g.name} — ${g.cost}💰`;
-                    btn.style.margin = "8px";
-                    btn.title = g.desc;
                     btn.onclick = () => {
+                        this.stopQuestionTimer();
                         if (player.money >= g.cost) {
                             player.money -= g.cost;
                             if (g.need) this.addUniqueToken(player, "Заботливый");
@@ -962,14 +939,14 @@
                             playSound("success");
                         } else {
                             playSound("error");
-                            alert("Не хватает монет!");
-                            container.innerHTML += `<p>❌ Денег нет. Ход завершён.</p>`;
+                            container.innerHTML += `<p>❌ Не хватает монет!</p>`;
                         }
                         if (player.money <= 0) this.checkBankruptcy(player, -1, container);
                         setTimeout(() => done(), 1200);
                     };
-                    container.appendChild(btn);
+                    optionsDiv.appendChild(btn);
                 });
+                container.appendChild(optionsDiv);
             }
         }
 
@@ -985,56 +962,61 @@
                     player.money -= amount;
                     player.bankMoney += amount;
                     container.innerHTML += `<p>🤖 ${player.name} положил в банк ${amount} монет. На счету: ${player.bankMoney}</p>`;
-                } else {
-                    container.innerHTML += `<p>🤖 ${player.name} ничего не положил в банк.</p>`;
-                }
+                } else container.innerHTML += `<p>🤖 ${player.name} ничего не положил в банк.</p>`;
                 setTimeout(() => done(), 1200);
             } else {
                 container.innerHTML += `<p>🔮 Загадка: ${randomRiddle.question}</p>`;
-                const answerBtn = document.createElement("button");
-                answerBtn.innerText = "Ответить";
-                answerBtn.onclick = () => {
-                    let ans = prompt("Введите ответ:").trim().toLowerCase();
-                    if (randomRiddle.answers.some(a => ans === a.toLowerCase())) {
-                        player.bankMoney += 1;
-                        this.addUniqueToken(player, "Мудрость");
-                        container.innerHTML += `<p>✨ Верно! +1 монета в банк и жетон «Мудрость». На счету: ${player.bankMoney}💰</p>`;
-                        playSound("success");
-                    } else {
-                        playSound("error");
-                        container.innerHTML += `<p>📖 Неверно, но ты можешь положить деньги в банк. Сколько?</p>`;
-                        let input = document.createElement("input");
-                        input.type = "number";
-                        input.placeholder = "сумма";
-                        let submit = document.createElement("button");
-                        submit.innerText = "Вложить";
-                        submit.onclick = () => {
-                            let val = parseInt(input.value);
-                            if (!isNaN(val) && val > 0 && player.money >= val) {
-                                player.money -= val;
-                                player.bankMoney += val;
-                                container.innerHTML += `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
-                                playSound("success");
-                            } else { container.innerHTML += `<p>❌ Не вышло. Ход окончен.</p>`; playSound("error"); }
-                            setTimeout(() => done(), 1000);
-                        };
-                        container.appendChild(input);
-                        container.appendChild(submit);
-                        return;
-                    }
-                    setTimeout(() => done(), 1200);
-                };
-                container.appendChild(answerBtn);
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options-buttons';
+                this.startQuestionTimer(container, done, () => {
+                    container.innerHTML += `<p>⏰ Время вышло! Ход пропущен.</p>`;
+                    this.waitingForAction = false;
+                    done();
+                });
+                randomRiddle.options.forEach(opt => {
+                    let btn = document.createElement('button');
+                    btn.innerText = opt;
+                    btn.onclick = () => {
+                        this.stopQuestionTimer();
+                        let correct = Array.isArray(randomRiddle.correct) ? randomRiddle.correct.includes(opt) : (opt === randomRiddle.correct);
+                        if (correct) {
+                            player.bankMoney += 1;
+                            this.addUniqueToken(player, "Мудрость");
+                            container.innerHTML += `<p>✨ Верно! +1 монета в банк и жетон «Мудрость». На счету: ${player.bankMoney}💰</p>`;
+                            playSound("success");
+                        } else {
+                            playSound("error");
+                            container.innerHTML += `<p>📖 Неверно. Правильный ответ: ${Array.isArray(randomRiddle.correct) ? randomRiddle.correct.join(", ") : randomRiddle.correct}.</p>`;
+                            let input = document.createElement("input");
+                            input.type = "number";
+                            input.placeholder = "сумма";
+                            let submit = document.createElement("button");
+                            submit.innerText = "Вложить";
+                            submit.onclick = () => {
+                                let val = parseInt(input.value);
+                                if (!isNaN(val) && val > 0 && player.money >= val) {
+                                    player.money -= val;
+                                    player.bankMoney += val;
+                                    container.innerHTML += `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
+                                    playSound("success");
+                                } else { container.innerHTML += `<p>❌ Не вышло. Ход окончен.</p>`; playSound("error"); }
+                                setTimeout(() => done(), 1000);
+                            };
+                            container.appendChild(input);
+                            container.appendChild(submit);
+                            return;
+                        }
+                        setTimeout(() => done(), 1200);
+                    };
+                    optionsDiv.appendChild(btn);
+                });
+                container.appendChild(optionsDiv);
             }
         }
 
         dreamAction(player, container, done) {
             if (player.isBot) {
-                if (!player.dreamTarget) {
-                    const target = GAME_CONFIG.dreamTargets[Math.floor(Math.random() * GAME_CONFIG.dreamTargets.length)];
-                    player.dreamTarget = target;
-                    player.dreamFund = 0;
-                }
+                if (!player.dreamTarget) player.dreamTarget = GAME_CONFIG.dreamTargets[Math.floor(Math.random() * GAME_CONFIG.dreamTargets.length)];
                 let needed = player.dreamTarget.cost - player.dreamFund;
                 let maxToSave = Math.min(player.money, needed);
                 let saveAmount = 0;
@@ -1051,18 +1033,24 @@
                         this.addUniqueToken(player, "Мечтатель");
                         container.innerHTML += `<p>✨ Мечта сбылась! + жетон Мечтатель ✨</p>`;
                     }
-                } else {
-                    container.innerHTML += `<p>🤖 ${player.name} ничего не отложил на мечту.</p>`;
-                }
+                } else container.innerHTML += `<p>🤖 ${player.name} ничего не отложил на мечту.</p>`;
                 if (player.money <= 0) this.checkBankruptcy(player, -1, container);
                 setTimeout(() => done(), 1500);
             } else {
                 if (!player.dreamTarget) {
                     container.innerHTML += `<p>Выбери мечту:</p>`;
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options-buttons';
+                    this.startQuestionTimer(container, done, () => {
+                        container.innerHTML += `<p>⏰ Время вышло! Ход пропущен.</p>`;
+                        this.waitingForAction = false;
+                        done();
+                    });
                     GAME_CONFIG.dreamTargets.forEach(d => {
-                        let btn = document.createElement("button");
+                        let btn = document.createElement('button');
                         btn.innerText = `${d.name} (${d.cost}💰)`;
                         btn.onclick = () => {
+                            this.stopQuestionTimer();
                             player.dreamTarget = d;
                             player.dreamFund = 0;
                             container.innerHTML += `<p>🎯 Мечта: ${d.name}. Внеси монеты!</p><input id="dreamAmount" type="number" placeholder="сумма"><button id="saveDream">Отложить</button>`;
@@ -1085,8 +1073,9 @@
                                 } else { alert("неверная сумма"); playSound("error"); }
                             });
                         };
-                        container.appendChild(btn);
+                        optionsDiv.appendChild(btn);
                     });
+                    container.appendChild(optionsDiv);
                 } else {
                     container.innerHTML += `<p>🎯 Копишь на ${player.dreamTarget.name} (${player.dreamFund}/${player.dreamTarget.cost})</p><input id="extra" placeholder="внести"><button id="addMore">Внести</button>`;
                     document.getElementById("addMore")?.addEventListener("click", () => {
@@ -1113,32 +1102,19 @@
         surpriseAction(player, container, done) {
             let ev = GAME_CONFIG.surpriseEvents[Math.floor(Math.random() * GAME_CONFIG.surpriseEvents.length)];
             if (player.isBot) {
-                if (ev.type === "good") {
-                    player.money += ev.deltaMoney;
-                    container.innerHTML += `<p>🤖 ${player.name}: ${ev.text} Теперь у него ${player.money}💰</p>`;
-                } else if (ev.type === "bad") {
-                    player.money = Math.max(0, player.money + ev.deltaMoney);
-                    container.innerHTML += `<p>🤖 ${player.name}: ${ev.text} Осталось ${player.money}💰</p>`;
-                } else if (ev.type === "choice") {
+                if (ev.type === "good") { player.money += ev.deltaMoney; container.innerHTML += `<p>🤖 ${player.name}: ${ev.text} Теперь у него ${player.money}💰</p>`; }
+                else if (ev.type === "bad") { player.money = Math.max(0, player.money + ev.deltaMoney); container.innerHTML += `<p>🤖 ${player.name}: ${ev.text} Осталось ${player.money}💰</p>`; }
+                else if (ev.type === "choice") {
                     if (player.money >= 2 && !player.tokens.includes("Дружба") && Math.random() < 0.5) {
-                        player.money -= 2;
-                        this.addUniqueToken(player, "Дружба");
+                        player.money -= 2; this.addUniqueToken(player, "Дружба");
                         container.innerHTML += `<p>🤖 ${player.name} помог другу! Получен жетон Дружбы</p>`;
-                    } else {
-                        container.innerHTML += `<p>🤖 ${player.name} отказался помогать.</p>`;
-                    }
+                    } else container.innerHTML += `<p>🤖 ${player.name} отказался помогать.</p>`;
                 } else if (ev.type === "choiceGift") {
                     if (player.money >= 3 && !player.tokens.includes("Дружба") && Math.random() < 0.6) {
-                        player.money -= 3;
-                        this.addUniqueToken(player, "Дружба");
+                        player.money -= 3; this.addUniqueToken(player, "Дружба");
                         container.innerHTML += `<p>🤖 ${player.name} купил подарок и получил жетон Дружбы!</p>`;
-                    } else {
-                        container.innerHTML += `<p>🤖 ${player.name} не купил подарок.</p>`;
-                    }
-                } else if (ev.type === "tokenWise") {
-                    this.addUniqueToken(player, "Мудрость");
-                    container.innerHTML += `<p>🤖 ${player.name} получил жетон Мудрость!</p>`;
-                }
+                    } else container.innerHTML += `<p>🤖 ${player.name} не купил подарок.</p>`;
+                } else if (ev.type === "tokenWise") { this.addUniqueToken(player, "Мудрость"); container.innerHTML += `<p>🤖 ${player.name} получил жетон Мудрость!</p>`; }
                 if (player.money <= 0) this.checkBankruptcy(player, -1, container);
                 setTimeout(() => done(), 1500);
             } else {
@@ -1155,6 +1131,8 @@
                     playSound("error");
                     setTimeout(() => done(), 1500);
                 } else if (ev.type === "choice") {
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'options-buttons';
                     let helpBtn = document.createElement("button");
                     helpBtn.innerText = "Помочь (+ жетон Дружба)";
                     helpBtn.onclick = () => {
@@ -1176,8 +1154,9 @@
                         playSound("error");
                         setTimeout(() => done(), 1000);
                     };
-                    container.appendChild(helpBtn);
-                    container.appendChild(skipBtn);
+                    optionsDiv.appendChild(helpBtn);
+                    optionsDiv.appendChild(skipBtn);
+                    container.appendChild(optionsDiv);
                 } else if (ev.type === "choiceGift") {
                     let giftBtn = document.createElement("button");
                     giftBtn.innerText = "Купить подарок (-3 монеты, +жетон Дружбы)";
@@ -1221,24 +1200,24 @@
         nextTurn() {
             this.waitingForAction = false;
             this.stopTurnTimer();
-            // Обработка пропусков ходов (банкротство)
-            const current = this.getCurrentPlayer();
+            this.stopQuestionTimer();
+            let current = this.getCurrentPlayer();
             if (current.skipTurns > 0) {
                 current.skipTurns--;
-                if (current.skipTurns === 0) {
-                    this.respawnPlayer(current);
-                }
-                // переходим к следующему игроку
+                if (current.skipTurns === 0) this.respawnPlayer(current);
                 this.currentTurn = (this.currentTurn + 1) % this.players.length;
                 if (this.players.every(p => p.hasFinished)) this.gameActive = false;
                 renderGameUI(this);
-                this.nextTurn(); // рекурсивно обрабатываем следующих (чтобы не задерживаться на пропусках)
+                this.processNextTurn();
                 return;
             }
-            // обычный переход
             this.currentTurn = (this.currentTurn + 1) % this.players.length;
             if (this.players.every(p => p.hasFinished)) this.gameActive = false;
             renderGameUI(this);
+            this.processNextTurn();
+        }
+
+        processNextTurn() {
             const nextPlayer = this.getCurrentPlayer();
             if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished && nextPlayer.skipTurns === 0) this.startTurnTimer();
             if (this.gameActive && nextPlayer.isBot && !this.waitingForAction && nextPlayer.skipTurns === 0) {
@@ -1252,14 +1231,10 @@
                         document.getElementById("botMessage").innerHTML = "";
                     }
                 }, 800);
-            } else {
-                document.getElementById("botMessage").innerHTML = "";
-            }
+            } else document.getElementById("botMessage").innerHTML = "";
         }
 
-        applyEndRoundInterest() {
-            for(let p of this.players) if(p.bankMoney > 0) p.bankMoney += 1;
-        }
+        applyEndRoundInterest() { for(let p of this.players) if(p.bankMoney > 0) p.bankMoney += 1; }
     }
 
     function renderGameUI(engine) {
@@ -1314,7 +1289,7 @@
         for (let i = 0; i < botCount; i++) players.push({ name: `Бот ${i+1}`, isBot: true });
         const boardCells = generateBoardCells(mode);
         const requireTokens = mode === 'short' ? 3 : 5;
-        const game = new GameController(players, boardCells, requireTokens);
+        const game = new GameController(players, boardCells, requireTokens, mode);
         game.difficulty = difficulty;
         activeGame = game;
         document.getElementById("setupPanel").style.display = "none";
@@ -1348,14 +1323,8 @@
     document.getElementById("rollDiceBtn").addEventListener("click", async () => {
         if(activeGame && activeGame.gameActive && !activeGame.waitingForAction) {
             const currentPlayer = activeGame.getCurrentPlayer();
-            if (currentPlayer.isBot) {
-                alert("Сейчас ход бота, подождите!");
-                return;
-            }
-            if (currentPlayer.skipTurns > 0) {
-                alert("Вы банкрот и пропускаете ходы!");
-                return;
-            }
+            if (currentPlayer.isBot) { alert("Сейчас ход бота, подождите!"); return; }
+            if (currentPlayer.skipTurns > 0) { alert("Вы банкрот и пропускаете ходы!"); return; }
             await activeGame.rollAndMove();
             renderGameUI(activeGame);
             activeGame.applyEndRoundInterest();
