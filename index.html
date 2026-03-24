@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Денежкинск · Финансовое приключение</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0b0b10;
+            color: #f0f0f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Фон с буквами */
+        .bg-letters {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+            opacity: 0.06;
+            pointer-events: none;
+        }
+        .bg-letters span {
+            position: absolute;
+            font-size: 5rem;
+            font-weight: 800;
+            color: #ffd966;
+            animation: floatLetter linear infinite;
+        }
+        @keyframes floatLetter {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.2; }
+            80% { opacity: 0.2; }
+            100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* прогресс-бар */
+        #scrollBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ffd966, #ffaa33);
+            width: 0%;
+            z-index: 2000;
+            border-radius: 0 0 4px 0;
+        }
+
+        /* верхняя панель */
+        .top-bar {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 94%;
+            max-width: 1280px;
+            height: 70px;
+            border-radius: 38px;
+            backdrop-filter: blur(22px) saturate(180%);
+            background: rgba(20, 20, 32, 0.65);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 26px;
+            z-index: 1100;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 215, 120, 0.25);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .top-bar.scrolled {
+            height: 58px;
+            background: rgba(10, 10, 18, 0.85);
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFE6B0, #FFC857);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* переключатель вкладок */
+        .toggle {
+            position: relative;
+            width: 320px;
+            height: 44px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            display: flex;
+            border: 1px solid rgba(255, 215, 120, 0.35);
+            overflow: hidden;
+        }
+        .toggle button {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #f0f0f0;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 2;
+            transition: 0.2s;
+        }
+        .toggle button.active {
+            font-weight: 700;
+            text-shadow: 0 0 8px #ffc857;
+        }
+        .toggle .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 25%;
+            height: 100%;
+            border-radius: 40px;
+            background: rgba(255, 200, 80, 0.3);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 210, 90, 0.7);
+            transition: left 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        /* контейнеры */
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 110px auto 20px auto;
+            padding: 32px 28px;
+            border-radius: 44px;
+            background: rgba(18, 18, 28, 0.55);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 210, 100, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .tab-block {
+            width: 90%;
+            max-width: 1100px;
+            margin: 20px auto;
+            display: none;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .tab-block.active {
+            display: flex;
+        }
+
+        .glass-card {
+            background: rgba(25, 25, 40, 0.6);
+            backdrop-filter: blur(16px);
+            border-radius: 32px;
+            padding: 24px 28px;
+            border: 1px solid rgba(255, 200, 100, 0.25);
+            transition: 0.25s;
+        }
+
+        /* игровая зона */
+        .game-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 40px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+        .board {
+            background: #1e1e2a;
+            border-radius: 36px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .cell {
+            background: rgba(255, 200, 100, 0.12);
+            border-radius: 24px;
+            padding: 12px 6px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 200, 100, 0.4);
+            transition: 0.2s;
+        }
+        .cell.active {
+            background: rgba(255, 200, 80, 0.35);
+            box-shadow: 0 0 14px #ffc857;
+            border-color: #ffcd7e;
+        }
+        .player-token {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: #ffb347;
+            border-radius: 50%;
+            margin: 2px;
+            line-height: 28px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #1e1e2a;
+            box-shadow: 0 0 0 2px #fff8e7;
+        }
+
+        .players-list {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .player-card {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 28px;
+            padding: 12px 20px;
+            width: 200px;
+            border-left: 5px solid #ffc857;
+        }
+        .turn-indicator {
+            background: #ffc85720;
+            border-radius: 40px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        button {
+            background: #ffc857;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 48px;
+            font-weight: bold;
+            color: #1e1e2a;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+        button:active { transform: scale(0.97);}
+        button.secondary {
+            background: rgba(255,255,200,0.2);
+            color: #ffeaac;
+        }
+        .action-area {
+            background: #00000055;
+            border-radius: 32px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        footer {
+            margin-top: 40px;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(255,200,100,0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        h2, h3 { color: #ffdd99; margin-bottom: 12px; }
+        .badge {
+            background: #ffc857;
+            color: #1e1e2a;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin: 4px;
+        }
+    </style>
+</head>
+<body>
+<div id="scrollBar"></div>
+<div class="bg-letters">
+    <span style="left:7%; animation-duration:19s;">💰</span>
+    <span style="left:20%; animation-duration:23s;">🪙</span>
+    <span style="left:48%; animation-duration:17s;">⭐</span>
+    <span style="left:72%; animation-duration:21s;">🐷</span>
+    <span style="left:85%; animation-duration:25s;">🏆</span>
+</div>
+
+<div class="top-bar" id="topBar">
+    <div class="logo">✨ Денежкинск ✨</div>
+    <div class="toggle">
+        <div class="slider" id="slider"></div>
+        <button data-tab="home">Главная</button>
+        <button data-tab="game">Игра</button>
+        <button data-tab="contacts">Контакты</button>
+    </div>
+</div>
+
+<!-- главная вкладка -->
+<div id="homeTab" class="tab-block active">
+    <div class="glass-card">
+        <h2>🎲 Тайна Золотого Дракона</h2>
+        <p>Добро пожаловать в город Денежкинск! Помогите жителям навести порядок в финансах, собирайте жетоны мудрости и станьте Почётным гражданином. <br> <strong>Цель:</strong> первым собрать 3 разных жетона («Мастер», «Заботливый», «Мечтатель», «Дружба») и добраться до «Ярмарки талантов».</p>
+    </div>
+    <div class="glass-card">
+        <h3>📜 Как играть</h3>
+        <p>• Создайте комнату и добавьте игроков (2–4 человека). <br>
+        • Кидайте кубик, ходите по клеткам-зданиям.<br>
+        • Выполняйте задания: зарабатывайте деньги, покупайте «Надо», копите на мечту, отвечайте на загадки.<br>
+        • Получайте жетоны за разумные финансовые решения.<br>
+        • Первый с 3 жетонами и финишем на «Ярмарке» побеждает!</p>
+    </div>
+</div>
+
+<!-- вкладка игры (комната + геймплей) -->
+<div id="gameTab" class="tab-block">
+    <div class="glass-card" id="lobbySection">
+        <h2>🏠 Игровая комната</h2>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <input type="text" id="roomCodeInput" placeholder="Код комнаты" style="padding: 12px; border-radius: 60px; background: #2a2a36; border:1px solid gold; color:white;">
+            <button id="createRoomBtn">✨ Создать комнату</button>
+            <button id="joinRoomBtn">🔑 Присоединиться</button>
+        </div>
+        <div id="roomInfo" style="margin-top: 20px;"></div>
+        <div id="playersSetup" style="margin-top: 20px;"></div>
+        <button id="startGameBtn" style="display: none; margin-top: 20px;">🚀 Начать игру</button>
+    </div>
+    <div id="gameplayArea" style="display: none;">
+        <div class="game-panel">
+            <div id="boardContainer" class="board"></div>
+            <div class="players-list" id="playersListGame"></div>
+            <div class="turn-indicator" id="turnInfo">🎲 Ожидание хода...</div>
+            <div id="actionPanel" class="action-area">
+                <button id="rollDiceBtn" style="background: #ffaa33;">🎲 Бросить кубик</button>
+                <div id="actionDetails" style="margin-top: 16px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- контакты -->
+<div id="contactsTab" class="tab-block">
+    <div class="glass-card">
+        <h3>📬 Контакты</h3>
+        <p>✉️ game@denezhkinsk.ru <br>📱 Telegram: @fin_lab_school</p>
+        <p>🎓 Проект финансовой грамотности для младших классов</p>
+    </div>
+</div>
+
+<footer>© Денежкинск · учимся управлять мечтами</footer>
+
+<script>
+    // ---------- ГЛОБАЛЬНОЕ СОСТОЯНИЕ ----------
+    let currentRoom = null;          // { code, players: [{id,name,money,position,tokens,dreamFund,dreamTarget,bankMoney}] , turnIndex, boardCells, gameActive}
+    let gameEngine = null;
+    let currentPlayerView = null;
+
+    // Карта локаций (12 клеток + финишная ярмарка)
+    const BOARD_CELLS = [
+        { name: "🏛️ Гильдия мастеров", type: "guild" },
+        { name: "🛒 Лавка Хочу/Надо", type: "shop" },
+        { name: "🏦 Хранилище Сберкова", type: "bank" },
+        { name: "🐷 Фабрика мечты", type: "dream" },
+        { name: "🎲 Вихрь сюрпризов", type: "surprise" },
+        { name: "🏛️ Гильдия мастеров", type: "guild" },
+        { name: "🛒 Лавка Хочу/Надо", type: "shop" },
+        { name: "🏦 Хранилище Сберкова", type: "bank" },
+        { name: "🐷 Фабрика мечты", type: "dream" },
+        { name: "🎲 Вихрь сюрпризов", type: "surprise" },
+        { name: "🏛️ Гильдия мастеров", type: "guild" },
+        { name: "🎪 Ярмарка талантов", type: "fair" }  // финиш
+    ];
+
+    const DREAM_TARGETS = [
+        { name: "Велосипед", cost: 25 },
+        { name: "Планшет", cost: 40 },
+        { name: "Робот-игрушка", cost: 30 },
+        { name: "Аквапарк", cost: 35 }
+    ];
+
+    // ---- вспомогательные функции ----
+    function generateRoomCode() {
+        return Math.floor(1000 + Math.random() * 9000).toString();
+    }
+
+    class GameController {
+        constructor(playersArray, cells) {
+            this.players = playersArray.map((p, idx) => ({
+                id: idx,
+                name: p.name,
+                money: 10,
+                position: 0,
+                tokens: [],
+                dreamFund: 0,
+                dreamTarget: null,
+                bankMoney: 0,
+                hasFinished: false
+            }));
+            this.cells = cells;
+            this.currentTurn = 0;
+            this.gameActive = true;
+            this.winner = null;
+            this.waitingForAction = false;
+            this.pendingActionResolve = null;
+        }
+
+        getCurrentPlayer() {
+            return this.players[this.currentTurn];
+        }
+
+        async rollAndMove() {
+            if (this.waitingForAction) return false;
+            const player = this.getCurrentPlayer();
+            if (player.hasFinished) {
+                this.nextTurn();
+                return false;
+            }
+            const roll = Math.floor(Math.random() * 6) + 1;
+            let newPos = player.position + roll;
+            if (newPos >= this.cells.length) {
+                newPos = this.cells.length - 1; // если перешагнул ярмарку — остается на ярмарке
+            }
+            player.position = newPos;
+            const cell = this.cells[newPos];
+            // показать действие
+            this.waitingForAction = true;
+            await this.triggerCellAction(player, cell);
+            // после действия проверка победы
+            if (cell.type === "fair" && player.tokens.length >= 3 && !player.hasFinished) {
+                player.hasFinished = true;
+                this.winner = player;
+                this.gameActive = false;
+                return true;
+            }
+            // проверка набора 3 токенов + на финише? если финиш и токенов>=3 — победа, иначе просто ход
+            this.nextTurn();
+            return true;
+        }
+
+        async triggerCellAction(player, cell) {
+            return new Promise((resolve) => {
+                this.pendingActionResolve = resolve;
+                const detailsDiv = document.getElementById("actionDetails");
+                detailsDiv.style.display = "block";
+                switch (cell.type) {
+                    case "guild": this.guildAction(player, detailsDiv, resolve); break;
+                    case "shop": this.shopAction(player, detailsDiv, resolve); break;
+                    case "bank": this.bankAction(player, detailsDiv, resolve); break;
+                    case "dream": this.dreamAction(player, detailsDiv, resolve); break;
+                    case "surprise": this.surpriseAction(player, detailsDiv, resolve); break;
+                    case "fair": this.fairAction(player, detailsDiv, resolve); break;
+                    default: resolve();
+                }
+            });
+        }
+
+        guildAction(player, container, done) {
+            const professions = ["👩‍🍳 Повар", "🎨 Художник", "👷 Строитель"];
+            const taskMap = {
+                "👩‍🍳 Повар": "Изобрази приготовление бутерброда! (пантомима)",
+                "🎨 Художник": "Нарисуй монетку с закрытыми глазами",
+                "👷 Строитель": "Построй башню из 5 кубиков (воображение)"
+            };
+            container.innerHTML = `<h4>🏆 Гильдия мастеров</h4><p>Выбери профессию и выполни задание:</p>`;
+            professions.forEach(prof => {
+                let btn = document.createElement("button");
+                btn.innerText = prof;
+                btn.style.margin = "8px";
+                btn.onclick = () => {
+                    alert(`Задание: ${taskMap[prof]}\n(попроси ведущего оценить!)`);
+                    player.money += 5;
+                    if (!player.tokens.includes("Мастер")) player.tokens.push("Мастер");
+                    container.innerHTML = `<p>✅ +5 монет, получен жетон «Мастер»! У вас ${player.money}💰</p>`;
+                    setTimeout(() => { done(); }, 1200);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        shopAction(player, container, done) {
+            const goods = [
+                { name: "🥖 Хлеб (Надо)", cost: 2, need: true },
+                { name: "🎫 Проездной (Надо)", cost: 3, need: true },
+                { name: "🧸 Плюшевый мишка (Хочу)", cost: 5, need: false }
+            ];
+            container.innerHTML = `<h4>🛒 Лавка «Хочу и Надо»</h4><p>Выбери ОДИН товар:</p>`;
+            goods.forEach(g => {
+                let btn = document.createElement("button");
+                btn.innerText = `${g.name} — ${g.cost}💰`;
+                btn.style.margin = "8px";
+                btn.onclick = () => {
+                    if (player.money >= g.cost) {
+                        player.money -= g.cost;
+                        if (g.need && !player.tokens.includes("Заботливый")) player.tokens.push("Заботливый");
+                        container.innerHTML = `<p>✅ Куплено ${g.name}. Осталось ${player.money}💰</p>`;
+                        if (g.need) container.innerHTML += `<p>🎖️ Получен жетон «Заботливый»!</p>`;
+                        setTimeout(() => done(), 1200);
+                    } else {
+                        alert("Не хватает монет!");
+                        container.innerHTML = `<p>❌ Денег нет. Ход завершён.</p>`;
+                        setTimeout(() => done(), 1000);
+                    }
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        bankAction(player, container, done) {
+            container.innerHTML = `<h4>🏦 Загадка Сберкова</h4><p>«Что можно купить, но нельзя продать?»</p>`;
+            const answerBtn = document.createElement("button");
+            answerBtn.innerText = "Ответить";
+            answerBtn.onclick = () => {
+                let ans = prompt("Твой ответ:", "здоровье");
+                if (ans && ans.toLowerCase().includes("здоровье")) {
+                    let bonus = 1;
+                    player.bankMoney += bonus;
+                    container.innerHTML = `<p>✨ Верно! +1 монета в банк. На счету: ${player.bankMoney}💰</p>`;
+                } else {
+                    container.innerHTML = `<p>📖 Неверно, но ты можешь положить деньги в банк. Сколько?</p>`;
+                    let input = document.createElement("input");
+                    input.type = "number";
+                    input.placeholder = "сумма";
+                    let submit = document.createElement("button");
+                    submit.innerText = "Вложить";
+                    submit.onclick = () => {
+                        let val = parseInt(input.value);
+                        if (!isNaN(val) && val > 0 && player.money >= val) {
+                            player.money -= val;
+                            player.bankMoney += val;
+                            container.innerHTML = `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
+                        } else { container.innerHTML = `<p>❌ Не вышло. Ход окончен.</p>`; }
+                        setTimeout(() => done(), 1000);
+                    };
+                    container.appendChild(input);
+                    container.appendChild(submit);
+                    return;
+                }
+                setTimeout(() => done(), 1200);
+            };
+            container.appendChild(answerBtn);
+        }
+
+        dreamAction(player, container, done) {
+            if (!player.dreamTarget) {
+                container.innerHTML = `<h4>🐷 Фабрика мечты</h4><p>Выбери мечту:</p>`;
+                DREAM_TARGETS.forEach(d => {
+                    let btn = document.createElement("button");
+                    btn.innerText = `${d.name} (${d.cost}💰)`;
+                    btn.onclick = () => {
+                        player.dreamTarget = d;
+                        player.dreamFund = 0;
+                        container.innerHTML = `<p>🎯 Мечта: ${d.name}. Внеси монеты!</p><input id="dreamAmount" type="number" placeholder="сумма"><button id="saveDream">Отложить</button>`;
+                        document.getElementById("saveDream")?.addEventListener("click", () => {
+                            let val = parseInt(document.getElementById("dreamAmount").value);
+                            if (!isNaN(val) && val > 0 && player.money >= val) {
+                                player.money -= val;
+                                player.dreamFund += val;
+                                if (player.dreamFund >= player.dreamTarget.cost) {
+                                    player.money += (player.dreamFund - player.dreamTarget.cost);
+                                    player.dreamFund = 0;
+                                    if (!player.tokens.includes("Мечтатель")) player.tokens.push("Мечтатель");
+                                    container.innerHTML = `<p>✨ Мечта сбылась! + жетон Мечтатель ✨</p>`;
+                                    setTimeout(() => done(), 1200);
+                                } else {
+                                    container.innerHTML = `<p>⭐ Отложено ${val}. Осталось накопить ${player.dreamTarget.cost - player.dreamFund} монет.</p><button id="cont">Продолжить</button>`;
+                                    document.getElementById("cont")?.addEventListener("click", () => done());
+                                }
+                            } else { alert("неверная сумма"); }
+                        });
+                    };
+                    container.appendChild(btn);
+                });
+            } else {
+                container.innerHTML = `<p>🎯 Копишь на ${player.dreamTarget.name} (${player.dreamFund}/${player.dreamTarget.cost})</p><input id="extra" placeholder="внести"><button id="addMore">Внести</button>`;
+                document.getElementById("addMore")?.addEventListener("click", () => {
+                    let val = parseInt(document.getElementById("extra").value);
+                    if (!isNaN(val) && val > 0 && player.money >= val) {
+                        player.money -= val;
+                        player.dreamFund += val;
+                        if (player.dreamFund >= player.dreamTarget.cost) {
+                            player.money += (player.dreamFund - player.dreamTarget.cost);
+                            player.dreamFund = 0;
+                            if (!player.tokens.includes("Мечтатель")) player.tokens.push("Мечтатель");
+                            container.innerHTML = `<p>🏆 Мечта исполнена! +жетон Мечтатель</p>`;
+                            setTimeout(() => done(), 1200);
+                        } else { container.innerHTML = `<p>💰 Отложено. Теперь ${player.dreamFund}/${player.dreamTarget.cost}</p><button id="close">Далее</button>`;
+                            document.getElementById("close")?.addEventListener("click", () => done());
+                        }
+                    } else { alert("недостаточно"); }
+                });
+            }
+        }
+
+        surpriseAction(player, container, done) {
+            const events = [
+                { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
+                { text: "💥 Сломался рюкзак: -2 монеты", deltaMoney: -2, type: "bad" },
+                { text: "🤝 Помоги другу: отдай 2 монеты или потеряй жетон Дружбы", type: "choice" }
+            ];
+            let ev = events[Math.floor(Math.random() * events.length)];
+            container.innerHTML = `<h4>🎲 Вихрь сюрпризов</h4><p>${ev.text}</p>`;
+            if (ev.type === "good") {
+                player.money += ev.deltaMoney;
+                container.innerHTML += `<p>✅ Теперь у тебя ${player.money}💰</p>`;
+                setTimeout(() => done(), 1500);
+            } else if (ev.type === "bad") {
+                player.money = Math.max(0, player.money + ev.deltaMoney);
+                container.innerHTML += `<p>😟 Осталось ${player.money}💰</p>`;
+                setTimeout(() => done(), 1500);
+            } else if (ev.type === "choice") {
+                let helpBtn = document.createElement("button");
+                helpBtn.innerText = "Помочь (+ жетон Дружба)";
+                helpBtn.onclick = () => {
+                    if (player.money >= 2) {
+                        player.money -= 2;
+                        if (!player.tokens.includes("Дружба")) player.tokens.push("Дружба");
+                        container.innerHTML = `<p>🤗 Ты помог! Получен жетон Дружбы</p>`;
+                    } else { container.innerHTML = `<p>😔 Нет денег помочь...</p>`; }
+                    setTimeout(() => done(), 1200);
+                };
+                let skipBtn = document.createElement("button");
+                skipBtn.innerText = "Отказаться (потерять жетон, если есть)";
+                skipBtn.onclick = () => {
+                    const idx = player.tokens.indexOf("Дружба");
+                    if (idx !== -1) player.tokens.splice(idx,1);
+                    container.innerHTML = `<p>😶 Жетон Дружбы утерян (если был)</p>`;
+                    setTimeout(() => done(), 1000);
+                };
+                container.appendChild(helpBtn);
+                container.appendChild(skipBtn);
+            }
+        }
+
+        fairAction(player, container, done) {
+            container.innerHTML = `<h4>🎪 Ярмарка талантов</h4><p>Проверка твоих жетонов...</p>`;
+            if (player.tokens.length >= 3 && !player.hasFinished) {
+                player.hasFinished = true;
+                container.innerHTML += `<p>🏆 Ты собрал 3 жетона и прибыл на Ярмарку! ПОБЕДА!</p>`;
+                this.winner = player;
+                this.gameActive = false;
+                done();
+            } else {
+                container.innerHTML += `<p>У тебя ${player.tokens.length}/3 жетонов. Собери больше и возвращайся!</p>`;
+                setTimeout(() => done(), 1500);
+            }
+        }
+
+        nextTurn() {
+            this.waitingForAction = false;
+            this.currentTurn = (this.currentTurn + 1) % this.players.length;
+            if (this.players.every(p => p.hasFinished)) this.gameActive = false;
+            renderGameUI(this);
+        }
+
+        applyEndRoundInterest() {
+            for(let p of this.players) {
+                if(p.bankMoney > 0) p.bankMoney += 1;
+            }
+        }
+    }
+
+    // отрисовка доски и интерфейса
+    function renderGameUI(engine) {
+        const boardDiv = document.getElementById("boardContainer");
+        boardDiv.innerHTML = "";
+        BOARD_CELLS.forEach((cell, idx) => {
+            let div = document.createElement("div");
+            div.className = "cell";
+            if (engine.players.some(p => p.position === idx)) div.classList.add("active");
+            div.innerHTML = `<strong>${cell.name}</strong><br>`;
+            engine.players.filter(p => p.position === idx).forEach(p => {
+                let tokenSpan = document.createElement("span");
+                tokenSpan.className = "player-token";
+                tokenSpan.innerText = p.name[0];
+                div.appendChild(tokenSpan);
+            });
+            boardDiv.appendChild(div);
+        });
+        const listDiv = document.getElementById("playersListGame");
+        listDiv.innerHTML = "";
+        engine.players.forEach(p => {
+            let card = document.createElement("div");
+            card.className = "player-card";
+            card.innerHTML = `<b>${p.name}</b> 💰${p.money}  🏦${p.bankMoney}<br>🎖️жетоны: ${p.tokens.join(", ") || "—"}<br>📍${BOARD_CELLS[p.position].name}`;
+            listDiv.appendChild(card);
+        });
+        const cur = engine.getCurrentPlayer();
+        document.getElementById("turnInfo").innerHTML = `🎲 Ход: ${cur.name} (монет: ${cur.money}💰 | жетоны: ${cur.tokens.length})`;
+        if (!engine.gameActive && engine.winner) {
+            document.getElementById("turnInfo").innerHTML = `🏆 ПОБЕДИТЕЛЬ: ${engine.winner.name}!!! 🏆`;
+            document.getElementById("rollDiceBtn").disabled = true;
+        } else {
+            document.getElementById("rollDiceBtn").disabled = false;
+        }
+    }
+
+    let activeGame = null;
+    document.getElementById("rollDiceBtn")?.addEventListener("click", async () => {
+        if(activeGame && activeGame.gameActive && !activeGame.waitingForAction) {
+            await activeGame.rollAndMove();
+            renderGameUI(activeGame);
+            activeGame.applyEndRoundInterest();
+            renderGameUI(activeGame);
+        } else alert("Сейчас нельзя бросить кубик");
+    });
+
+    // ----- ЛОББИ / КОМНАТЫ -----
+    const createBtn = document.getElementById("createRoomBtn");
+    const joinBtn = document.getElementById("joinRoomBtn");
+    const roomCodeInput = document.getElementById("roomCodeInput");
+    const roomInfoDiv = document.getElementById("roomInfo");
+    const playersSetupDiv = document.getElementById("playersSetup");
+    const startGameBtn = document.getElementById("startGameBtn");
+    const lobbySection = document.getElementById("lobbySection");
+    const gameplayArea = document.getElementById("gameplayArea");
+
+    let createdPlayers = [];
+    let currentRoomCode = null;
+
+    createBtn.onclick = () => {
+        let code = generateRoomCode();
+        currentRoomCode = code;
+        roomInfoDiv.innerHTML = `<p>✨ Комната создана! Код: <strong>${code}</strong>. Добавьте игроков.</p>`;
+        createdPlayers = [];
+        updatePlayersSetup();
+        startGameBtn.style.display = "inline-block";
+    };
+    joinBtn.onclick = () => {
+        let code = roomCodeInput.value.trim();
+        if(!code) { alert("Введите код комнаты"); return; }
+        if(currentRoomCode === code && currentRoomCode) {
+            roomInfoDiv.innerHTML = `<p>✅ Присоединились к комнате ${code}</p>`;
+            updatePlayersSetup();
+            startGameBtn.style.display = "inline-block";
+        } else {
+            alert("Комната не найдена. Сначала создайте комнату с таким кодом.");
+        }
+    };
+    function updatePlayersSetup() {
+        playersSetupDiv.innerHTML = `<h4>👥 Игроки (2-4)</h4>`;
+        for(let i=0; i<4; i++) {
+            let row = document.createElement("div");
+            row.style.margin = "8px";
+            let inp = document.createElement("input");
+            inp.placeholder = `Игрок ${i+1}`;
+            inp.value = createdPlayers[i] ? createdPlayers[i] : "";
+            inp.onchange = (e) => { createdPlayers[i] = e.target.value; };
+            row.appendChild(inp);
+            playersSetupDiv.appendChild(row);
+        }
+    }
+    startGameBtn.onclick = () => {
+        let finalPlayers = createdPlayers.filter(n => n && n.trim().length > 0);
+        if(finalPlayers.length < 2) { alert("Нужно минимум 2 игрока"); return; }
+        let playersObj = finalPlayers.map((name,idx) => ({ id: idx, name: name }));
+        activeGame = new GameController(playersObj, BOARD_CELLS);
+        lobbySection.style.display = "none";
+        gameplayArea.style.display = "block";
+        renderGameUI(activeGame);
+        document.getElementById("rollDiceBtn").disabled = false;
+    };
+
+    // табы
+    const slider = document.getElementById("slider");
+    const btns = document.querySelectorAll(".toggle button");
+    const homeTab = document.getElementById("homeTab");
+    const gameTab = document.getElementById("gameTab");
+    const contactsTab = document.getElementById("contactsTab");
+    btns.forEach((btn, idx) => {
+        btn.addEventListener("click", () => {
+            btns.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            slider.style.left = (idx * 25) + "%";
+            if(btn.dataset.tab === "home") { homeTab.classList.add("active"); gameTab.classList.remove("active"); contactsTab.classList.remove("active"); }
+            else if(btn.dataset.tab === "game") { gameTab.classList.add("active"); homeTab.classList.remove("active"); contactsTab.classList.remove("active"); }
+            else { contactsTab.classList.add("active"); homeTab.classList.remove("active"); gameTab.classList.remove("active"); }
+        });
+    });
+
+    window.addEventListener("scroll", () => {
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        document.getElementById("scrollBar").style.width = (window.scrollY / maxScroll) * 100 + "%";
+        document.getElementById("topBar").classList.toggle("scrolled", window.scrollY > 40);
+    });
+</script>
+</body>
+</html>
