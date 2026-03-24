@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Денежкинск · Финансовое приключение</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,6 +21,7 @@
             flex-direction: column;
         }
 
+        /* Фон с анимированными символами */
         .bg-letters {
             position: fixed;
             inset: 0;
@@ -46,6 +44,7 @@
             100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
         }
 
+        /* Скролл-бар */
         #scrollBar {
             position: fixed;
             top: 0;
@@ -57,9 +56,10 @@
             border-radius: 0 0 4px 0;
         }
 
+        /* Верхняя панель (исправленное позиционирование) */
         .top-bar {
             position: fixed;
-            top: 16px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
             width: 94%;
@@ -67,14 +67,14 @@
             height: 70px;
             border-radius: 38px;
             backdrop-filter: blur(22px) saturate(180%);
-            background: rgba(20, 20, 32, 0.65);
+            background: rgba(20, 20, 32, 0.75);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 26px;
             z-index: 1100;
             transition: 0.3s;
-            border: 1px solid rgba(255, 215, 120, 0.25);
+            border: 1px solid rgba(255, 215, 120, 0.35);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         .top-bar.scrolled {
@@ -91,6 +91,7 @@
             color: transparent;
         }
 
+        /* Переключатель вкладок */
         .toggle {
             position: relative;
             width: 320px;
@@ -130,16 +131,22 @@
             transition: left 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
+        /* Основные блоки */
         .tab-block {
             width: 90%;
             max-width: 1100px;
-            margin: 20px auto;
+            margin: 110px auto 20px auto;
             display: none;
             flex-direction: column;
             gap: 28px;
+            animation: fadeInUp 0.6s ease;
         }
         .tab-block.active {
             display: flex;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .glass-card {
@@ -148,9 +155,14 @@
             border-radius: 32px;
             padding: 24px 28px;
             border: 1px solid rgba(255, 200, 100, 0.25);
-            transition: 0.25s;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
         }
 
+        /* Игровое поле */
         .game-panel {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 40px;
@@ -174,12 +186,19 @@
             font-size: 0.8rem;
             font-weight: 500;
             border: 1px solid rgba(255, 200, 100, 0.4);
-            transition: 0.2s;
+            transition: all 0.3s;
+            position: relative;
         }
         .cell.active {
             background: rgba(255, 200, 80, 0.35);
             box-shadow: 0 0 14px #ffc857;
             border-color: #ffcd7e;
+            animation: pulse 0.6s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); background: rgba(255, 200, 80, 0.6); }
+            100% { transform: scale(1); }
         }
         .player-token {
             display: inline-block;
@@ -193,8 +212,13 @@
             font-weight: bold;
             color: #1e1e2a;
             box-shadow: 0 0 0 2px #fff8e7;
+            transition: transform 0.3s;
+        }
+        .player-token:hover {
+            transform: scale(1.1);
         }
 
+        /* Список игроков */
         .players-list {
             display: flex;
             gap: 20px;
@@ -205,8 +229,14 @@
             background: rgba(0, 0, 0, 0.5);
             border-radius: 28px;
             padding: 12px 20px;
-            width: 200px;
+            width: 220px;
             border-left: 5px solid #ffc857;
+            transition: all 0.3s;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         .turn-indicator {
             background: #ffc85720;
@@ -215,6 +245,7 @@
             margin: 20px 0;
             text-align: center;
             font-weight: bold;
+            transition: background 0.3s;
         }
         button {
             background: #ffc857;
@@ -224,19 +255,16 @@
             font-weight: bold;
             color: #1e1e2a;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s;
             font-size: 1rem;
         }
-        button:active { transform: scale(0.97);}
-        button.secondary {
-            background: rgba(255,255,200,0.2);
-            color: #ffeaac;
-        }
+        button:active { transform: scale(0.96); }
         .action-area {
             background: #00000055;
             border-radius: 32px;
             padding: 20px;
             margin-top: 20px;
+            animation: fadeIn 0.5s;
         }
         footer {
             margin-top: auto;
@@ -255,39 +283,32 @@
             color: white;
             font-size: 0.9rem;
         }
-        .room-players-list {
-            margin: 15px 0;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 24px;
-        }
-        .room-players-list .player-item {
-            display: inline-flex;
+        .setup-group {
+            display: flex;
+            gap: 16px;
             align-items: center;
-            background: #ffc85730;
-            padding: 6px 12px;
-            border-radius: 40px;
-            margin: 4px;
+            flex-wrap: wrap;
+            margin-top: 15px;
         }
-        .kick-btn {
-            background: #aa2e2e;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 2px 8px;
-            margin-left: 8px;
-            font-size: 0.7rem;
-            cursor: pointer;
+        .new-game-btn {
+            margin-top: 20px;
+            background: #3a6ea5;
         }
-        .leave-btn {
-            background: #aa2e2e80;
-            color: #ffc0c0;
-            margin-top: 10px;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
+        .timer {
+            font-size: 1.4rem;
+            font-weight: bold;
+            font-family: monospace;
+            margin-left: 15px;
             color: #ffc857;
+        }
+        .bot-turn-message {
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 28px;
+            text-align: center;
+            font-style: italic;
+            animation: fadeIn 0.3s;
         }
     </style>
 </head>
@@ -318,59 +339,54 @@
         <p>Добро пожаловать в город Денежкинск! Помогите жителям навести порядок в финансах, собирайте жетоны мудрости и станьте Почётным гражданином. <br> <strong>Цель:</strong> первым собрать 3 разных жетона («Мастер», «Заботливый», «Мечтатель», «Дружба») и добраться до «Ярмарки талантов».</p>
     </div>
     <div class="glass-card">
-        <h3>📜 Как играть</h3>
-        <p>• Создайте комнату и поделитесь кодом с друзьями (игра работает на разных устройствах через интернет).<br>
-        • Присоединяйтесь по коду, указав имя.<br>
-        • Когда соберётся 2–4 игрока, создатель комнаты нажимает «Начать игру».<br>
-        • Ходы синхронизируются между всеми игроками. Бросать кубик может только текущий игрок.<br>
-        • Первый с 3 жетонами на финише — победитель!</p>
+        <h3>📜 Как играть (одиночный режим)</h3>
+        <p>• Выберите количество ботов (1–3) и уровень сложности.<br>
+        • Ваша задача — обыграть компьютерных соперников, накапливая жетоны и быстрее всех добраться до финиша.<br>
+        • Ходите по очереди, бросайте кубик и принимайте финансовые решения.<br>
+        • На ход даётся 60 секунд. Не успели — ход пропускается.<br>
+        • Боты действуют автоматически в зависимости от сложности.<br>
+        • Первый, кто соберёт 3 разных жетона и попадёт на «Ярмарку талантов», побеждает!</p>
     </div>
 </div>
 
 <!-- Вкладка игры -->
 <div id="gameTab" class="tab-block">
-    <div id="firebaseConfigPanel" class="glass-card" style="display: block;">
-        <h3>🔧 Настройка Firebase</h3>
-        <p>Для работы игры на разных устройствах необходимо настроить Firebase. <br> 
-        Создайте проект в <a href="https://console.firebase.google.com/" target="_blank" style="color:#ffc857;">Firebase Console</a>, включите Realtime Database и скопируйте конфигурацию в поля ниже:</p>
-        <input type="text" id="apiKey" placeholder="apiKey" style="width:100%; margin:8px 0;">
-        <input type="text" id="authDomain" placeholder="authDomain" style="width:100%; margin:8px 0;">
-        <input type="text" id="databaseURL" placeholder="databaseURL" style="width:100%; margin:8px 0;">
-        <input type="text" id="projectId" placeholder="projectId" style="width:100%; margin:8px 0;">
-        <input type="text" id="storageBucket" placeholder="storageBucket" style="width:100%; margin:8px 0;">
-        <input type="text" id="messagingSenderId" placeholder="messagingSenderId" style="width:100%; margin:8px 0;">
-        <input type="text" id="appId" placeholder="appId" style="width:100%; margin:8px 0;">
-        <button id="initFirebaseBtn">Подключиться к Firebase</button>
-        <div id="firebaseStatus" style="margin-top: 10px; color:#ffc857;"></div>
-    </div>
-
-    <div class="glass-card" id="lobbySection" style="display: none;">
-        <h2>🏠 Игровая комната</h2>
-        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;">
-            <input type="text" id="roomCodeInput" placeholder="Код комнаты" style="flex:1;">
-            <button id="createRoomBtn">✨ Создать комнату</button>
-            <button id="joinRoomBtn">🔑 Присоединиться</button>
+    <div class="glass-card" id="setupPanel">
+        <h2>🏆 Новая игра</h2>
+        <div class="setup-group">
+            <label>🤖 Количество ботов:</label>
+            <select id="botCount">
+                <option value="1">1 бот</option>
+                <option value="2" selected>2 бота</option>
+                <option value="3">3 бота</option>
+            </select>
         </div>
-        <div id="roomInfo" style="margin-top: 10px;"></div>
-        <div id="roomPlayersList" class="room-players-list"></div>
-        <div id="joinNameContainer" style="display: none; margin-top: 15px;">
-            <input type="text" id="joinPlayerName" placeholder="Ваше имя">
-            <button id="confirmJoinBtn">Войти в комнату</button>
+        <div class="setup-group">
+            <label>🎯 Сложность:</label>
+            <select id="difficulty">
+                <option value="easy">Легко (боты часто ошибаются)</option>
+                <option value="medium" selected>Средне (сбалансированно)</option>
+                <option value="hard">Сложно (боты умные)</option>
+            </select>
         </div>
-        <button id="startGameBtn" style="display: none; margin-top: 20px;">🚀 Начать игру</button>
-        <button id="leaveRoomBtn" class="leave-btn" style="display: none;">🚪 Покинуть комнату</button>
+        <div class="setup-group">
+            <label>👤 Ваше имя:</label>
+            <input type="text" id="playerName" placeholder="Ваше имя" value="Хранитель">
+        </div>
+        <button id="startSingleGameBtn" style="margin-top: 20px;">✨ Начать приключение ✨</button>
     </div>
 
     <div id="gameplayArea" style="display: none;">
         <div class="game-panel">
             <div id="boardContainer" class="board"></div>
             <div class="players-list" id="playersListGame"></div>
-            <div class="turn-indicator" id="turnInfo">🎲 Ожидание хода...</div>
+            <div class="turn-indicator" id="turnInfo">🎲 Ожидание хода... <span id="timerDisplay" class="timer"></span></div>
             <div id="actionPanel" class="action-area">
                 <button id="rollDiceBtn" style="background: #ffaa33;">🎲 Бросить кубик</button>
                 <div id="actionDetails" style="margin-top: 16px;"></div>
+                <div id="botMessage" class="bot-turn-message"></div>
             </div>
-            <button id="backToLobbyBtn" style="margin-top: 20px; background: #444;">🏠 Вернуться в лобби</button>
+            <button id="newGameBtn" class="new-game-btn" style="margin-top: 20px;">🔄 Новая игра</button>
         </div>
     </div>
 </div>
@@ -387,16 +403,47 @@
 <footer>© Денежкинск · учимся управлять мечтами</footer>
 
 <script>
-    // ---------- Глобальные переменные ----------
-    let database = null;
-    let currentRoomRef = null;
-    let currentRoomCode = null;
-    let currentPlayerName = null;
-    let isRoomOwner = false;
-    let activeGame = null;
-    let currentGameStateListener = null;
-    
-    // Карта локаций
+    // ---------- Конфиг событий (расширяемый) ----------
+    const SURPRISE_EVENTS = [
+        { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
+        { text: "💥 Сломался рюкзак: -2 монеты", deltaMoney: -2, type: "bad" },
+        { text: "📚 Выиграл в лотерею: +5 монет!", deltaMoney: 5, type: "good" },
+        { text: "🚌 Проездной закончился: -1 монета", deltaMoney: -1, type: "bad" },
+        { text: "🤝 Помоги другу: отдай 2 монеты или потеряй жетон Дружбы", type: "choice" },
+        { text: "🎉 Нашёл клад: +4 монеты", deltaMoney: 4, type: "good" },
+        { text: "💸 Заплатил налог: -3 монеты", deltaMoney: -3, type: "bad" },
+        { text: "🍦 Угостил мороженым: -1 монета, + радость", deltaMoney: -1, type: "bad" },
+        { text: "🎁 Подарок от бабушки: +2 монеты", deltaMoney: 2, type: "good" },
+        { text: "🧸 Купил игрушку в подарок: -3 монеты, получил жетон Дружбы", type: "choiceGift" } // особый случай
+    ];
+
+    // Звуки (используем простые HTML Audio с dataURI)
+    const successSound = new Audio("data:audio/wav;base64,U3RlYWx0aCBzdWNjZXNz");
+    const errorSound = new Audio("data:audio/wav;base64,RXJyb3Igc291bmQ=");
+    // На случай, если браузер не поддерживает, создадим фоллбек через Web Audio
+    function playSound(type) {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.type = "sine";
+            if (type === "success") {
+                oscillator.frequency.value = 880;
+                gain.gain.value = 0.2;
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else {
+                oscillator.frequency.value = 440;
+                gain.gain.value = 0.15;
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.4);
+            }
+        } catch(e) { console.log("Audio not supported"); }
+    }
+
+    // ---------- Игровые константы ----------
     const BOARD_CELLS = [
         { name: "🏛️ Гильдия мастеров", type: "guild" },
         { name: "🛒 Лавка Хочу/Надо", type: "shop" },
@@ -419,12 +466,13 @@
         { name: "Аквапарк", cost: 35 }
     ];
 
-    // ---------- Игровой движок ----------
+    // ---------- Игровой движок (с таймером) ----------
     class GameController {
         constructor(playersArray, cells) {
             this.players = playersArray.map((p, idx) => ({
                 id: idx,
                 name: p.name,
+                isBot: p.isBot || false,
                 money: 10,
                 position: 0,
                 tokens: [],
@@ -438,10 +486,57 @@
             this.gameActive = true;
             this.winner = null;
             this.waitingForAction = false;
+            this.difficulty = null;
+            this.timer = null;
+            this.turnTimeSeconds = 60;
         }
 
         getCurrentPlayer() {
             return this.players[this.currentTurn];
+        }
+
+        startTurnTimer() {
+            this.stopTurnTimer();
+            const player = this.getCurrentPlayer();
+            if (player.isBot) return;
+            let timeLeft = this.turnTimeSeconds;
+            const timerElement = document.getElementById("timerDisplay");
+            if (!timerElement) return;
+            timerElement.innerText = `⏱️ ${timeLeft}с`;
+            this.timer = setInterval(() => {
+                if (!this.gameActive || this.waitingForAction || this.getCurrentPlayer().isBot) {
+                    // если бот или уже в действии — не обновляем
+                    return;
+                }
+                timeLeft--;
+                timerElement.innerText = `⏱️ ${timeLeft}с`;
+                if (timeLeft <= 0) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                    timerElement.innerText = "⏱️ 0с (ход пропущен)";
+                    this.skipTurn();
+                }
+            }, 1000);
+        }
+
+        stopTurnTimer() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+            const timerElement = document.getElementById("timerDisplay");
+            if (timerElement) timerElement.innerText = "";
+        }
+
+        async skipTurn() {
+            this.stopTurnTimer();
+            if (!this.gameActive || this.waitingForAction) return;
+            const player = this.getCurrentPlayer();
+            if (player.isBot) return;
+            const detailsDiv = document.getElementById("actionDetails");
+            detailsDiv.innerHTML = `<p>⏰ Время вышло! Ход пропущен.</p>`;
+            await new Promise(r => setTimeout(r, 1500));
+            this.nextTurn();
         }
 
         async rollAndMove() {
@@ -451,6 +546,7 @@
                 this.nextTurn();
                 return false;
             }
+            this.stopTurnTimer();
             const roll = Math.floor(Math.random() * 6) + 1;
             let newPos = player.position + roll;
             if (newPos >= this.cells.length) newPos = this.cells.length - 1;
@@ -484,6 +580,7 @@
             });
         }
 
+        // --- Действия (с звуками) ---
         guildAction(player, container, done) {
             const professions = ["👩‍🍳 Повар", "🎨 Художник", "👷 Строитель"];
             const taskMap = {
@@ -491,20 +588,29 @@
                 "🎨 Художник": "Нарисуй монетку с закрытыми глазами",
                 "👷 Строитель": "Построй башню из 5 кубиков (воображение)"
             };
-            container.innerHTML = `<h4>🏆 Гильдия мастеров</h4><p>Выбери профессию и выполни задание:</p>`;
-            professions.forEach(prof => {
-                let btn = document.createElement("button");
-                btn.innerText = prof;
-                btn.style.margin = "8px";
-                btn.onclick = () => {
-                    alert(`Задание: ${taskMap[prof]}\n(попроси ведущего оценить!)`);
-                    player.money += 5;
-                    if (!player.tokens.includes("Мастер")) player.tokens.push("Мастер");
-                    container.innerHTML = `<p>✅ +5 монет, получен жетон «Мастер»! У вас ${player.money}💰</p>`;
-                    setTimeout(() => { done(); }, 1200);
-                };
-                container.appendChild(btn);
-            });
+            if (player.isBot) {
+                const prof = professions[Math.floor(Math.random() * professions.length)];
+                player.money += 5;
+                if (!player.tokens.includes("Мастер")) player.tokens.push("Мастер");
+                container.innerHTML = `<p>🤖 ${player.name} выбрал ${prof} и получил +5 монет и жетон «Мастер»!</p>`;
+                setTimeout(() => done(), 1500);
+            } else {
+                container.innerHTML = `<h4>🏆 Гильдия мастеров</h4><p>Выбери профессию и выполни задание:</p>`;
+                professions.forEach(prof => {
+                    let btn = document.createElement("button");
+                    btn.innerText = prof;
+                    btn.style.margin = "8px";
+                    btn.onclick = () => {
+                        alert(`Задание: ${taskMap[prof]}\n(попроси ведущего оценить!)`);
+                        player.money += 5;
+                        if (!player.tokens.includes("Мастер")) player.tokens.push("Мастер");
+                        container.innerHTML = `<p>✅ +5 монет, получен жетон «Мастер»! У вас ${player.money}💰</p>`;
+                        playSound("success");
+                        setTimeout(() => { done(); }, 1200);
+                    };
+                    container.appendChild(btn);
+                });
+            }
         }
 
         shopAction(player, container, done) {
@@ -513,150 +619,276 @@
                 { name: "🎫 Проездной (Надо)", cost: 3, need: true },
                 { name: "🧸 Плюшевый мишка (Хочу)", cost: 5, need: false }
             ];
-            container.innerHTML = `<h4>🛒 Лавка «Хочу и Надо»</h4><p>Выбери ОДИН товар:</p>`;
-            goods.forEach(g => {
-                let btn = document.createElement("button");
-                btn.innerText = `${g.name} — ${g.cost}💰`;
-                btn.style.margin = "8px";
-                btn.onclick = () => {
-                    if (player.money >= g.cost) {
-                        player.money -= g.cost;
-                        if (g.need && !player.tokens.includes("Заботливый")) player.tokens.push("Заботливый");
-                        container.innerHTML = `<p>✅ Куплено ${g.name}. Осталось ${player.money}💰</p>`;
-                        if (g.need) container.innerHTML += `<p>🎖️ Получен жетон «Заботливый»!</p>`;
-                        setTimeout(() => done(), 1200);
-                    } else {
-                        alert("Не хватает монет!");
-                        container.innerHTML = `<p>❌ Денег нет. Ход завершён.</p>`;
-                        setTimeout(() => done(), 1000);
+            if (player.isBot) {
+                // ... логика бота (без изменений)
+                const isHard = this.difficulty === "hard";
+                const isEasy = this.difficulty === "easy";
+                let chosen = null;
+                if (isHard) {
+                    const needGoods = goods.filter(g => g.need && player.money >= g.cost);
+                    if (needGoods.length) chosen = needGoods.sort((a,b)=>a.cost-b.cost)[0];
+                } else if (isEasy) {
+                    const want = goods.find(g => !g.need);
+                    if (player.money >= want.cost && Math.random() < 0.4) chosen = want;
+                    else {
+                        const need = goods.find(g => g.need && player.money >= g.cost);
+                        if (need) chosen = need;
                     }
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        bankAction(player, container, done) {
-            container.innerHTML = `<h4>🏦 Загадка Сберкова</h4><p>«Что можно купить, но нельзя продать?»</p>`;
-            const answerBtn = document.createElement("button");
-            answerBtn.innerText = "Ответить";
-            answerBtn.onclick = () => {
-                let ans = prompt("Твой ответ:", "здоровье");
-                if (ans && ans.toLowerCase().includes("здоровье")) {
-                    player.bankMoney += 1;
-                    container.innerHTML = `<p>✨ Верно! +1 монета в банк. На счету: ${player.bankMoney}💰</p>`;
                 } else {
-                    container.innerHTML = `<p>📖 Неверно, но ты можешь положить деньги в банк. Сколько?</p>`;
-                    let input = document.createElement("input");
-                    input.type = "number";
-                    input.placeholder = "сумма";
-                    let submit = document.createElement("button");
-                    submit.innerText = "Вложить";
-                    submit.onclick = () => {
-                        let val = parseInt(input.value);
-                        if (!isNaN(val) && val > 0 && player.money >= val) {
-                            player.money -= val;
-                            player.bankMoney += val;
-                            container.innerHTML = `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
-                        } else { container.innerHTML = `<p>❌ Не вышло. Ход окончен.</p>`; }
-                        setTimeout(() => done(), 1000);
-                    };
-                    container.appendChild(input);
-                    container.appendChild(submit);
-                    return;
+                    const need = goods.find(g => g.need && player.money >= g.cost);
+                    if (need) chosen = need;
+                    else {
+                        const want = goods.find(g => !g.need);
+                        if (player.money >= want.cost) chosen = want;
+                    }
                 }
-                setTimeout(() => done(), 1200);
-            };
-            container.appendChild(answerBtn);
-        }
-
-        dreamAction(player, container, done) {
-            if (!player.dreamTarget) {
-                container.innerHTML = `<h4>🐷 Фабрика мечты</h4><p>Выбери мечту:</p>`;
-                DREAM_TARGETS.forEach(d => {
+                if (chosen) {
+                    player.money -= chosen.cost;
+                    if (chosen.need && !player.tokens.includes("Заботливый")) player.tokens.push("Заботливый");
+                    container.innerHTML = `<p>🤖 ${player.name} купил ${chosen.name}. Осталось ${player.money}💰</p>`;
+                    if (chosen.need) container.innerHTML += `<p>🎖️ Получен жетон «Заботливый»!</p>`;
+                } else {
+                    container.innerHTML = `<p>🤖 ${player.name} не смог ничего купить.</p>`;
+                }
+                setTimeout(() => done(), 1500);
+            } else {
+                container.innerHTML = `<h4>🛒 Лавка «Хочу и Надо»</h4><p>Выбери ОДИН товар:</p>`;
+                goods.forEach(g => {
                     let btn = document.createElement("button");
-                    btn.innerText = `${d.name} (${d.cost}💰)`;
+                    btn.innerText = `${g.name} — ${g.cost}💰`;
+                    btn.style.margin = "8px";
                     btn.onclick = () => {
-                        player.dreamTarget = d;
-                        player.dreamFund = 0;
-                        container.innerHTML = `<p>🎯 Мечта: ${d.name}. Внеси монеты!</p><input id="dreamAmount" type="number" placeholder="сумма"><button id="saveDream">Отложить</button>`;
-                        document.getElementById("saveDream")?.addEventListener("click", () => {
-                            let val = parseInt(document.getElementById("dreamAmount").value);
-                            if (!isNaN(val) && val > 0 && player.money >= val) {
-                                player.money -= val;
-                                player.dreamFund += val;
-                                if (player.dreamFund >= player.dreamTarget.cost) {
-                                    player.money += (player.dreamFund - player.dreamTarget.cost);
-                                    player.dreamFund = 0;
-                                    if (!player.tokens.includes("Мечтатель")) player.tokens.push("Мечтатель");
-                                    container.innerHTML = `<p>✨ Мечта сбылась! + жетон Мечтатель ✨</p>`;
-                                    setTimeout(() => done(), 1200);
-                                } else {
-                                    container.innerHTML = `<p>⭐ Отложено ${val}. Осталось накопить ${player.dreamTarget.cost - player.dreamFund} монет.</p><button id="cont">Продолжить</button>`;
-                                    document.getElementById("cont")?.addEventListener("click", () => done());
-                                }
-                            } else { alert("неверная сумма"); }
-                        });
+                        if (player.money >= g.cost) {
+                            player.money -= g.cost;
+                            if (g.need && !player.tokens.includes("Заботливый")) player.tokens.push("Заботливый");
+                            container.innerHTML = `<p>✅ Куплено ${g.name}. Осталось ${player.money}💰</p>`;
+                            if (g.need) container.innerHTML += `<p>🎖️ Получен жетон «Заботливый»!</p>`;
+                            playSound("success");
+                            setTimeout(() => done(), 1200);
+                        } else {
+                            playSound("error");
+                            alert("Не хватает монет!");
+                            container.innerHTML = `<p>❌ Денег нет. Ход завершён.</p>`;
+                            setTimeout(() => done(), 1000);
+                        }
                     };
                     container.appendChild(btn);
-                });
-            } else {
-                container.innerHTML = `<p>🎯 Копишь на ${player.dreamTarget.name} (${player.dreamFund}/${player.dreamTarget.cost})</p><input id="extra" placeholder="внести"><button id="addMore">Внести</button>`;
-                document.getElementById("addMore")?.addEventListener("click", () => {
-                    let val = parseInt(document.getElementById("extra").value);
-                    if (!isNaN(val) && val > 0 && player.money >= val) {
-                        player.money -= val;
-                        player.dreamFund += val;
-                        if (player.dreamFund >= player.dreamTarget.cost) {
-                            player.money += (player.dreamFund - player.dreamTarget.cost);
-                            player.dreamFund = 0;
-                            if (!player.tokens.includes("Мечтатель")) player.tokens.push("Мечтатель");
-                            container.innerHTML = `<p>🏆 Мечта исполнена! +жетон Мечтатель</p>`;
-                            setTimeout(() => done(), 1200);
-                        } else { container.innerHTML = `<p>💰 Отложено. Теперь ${player.dreamFund}/${player.dreamTarget.cost}</p><button id="close">Далее</button>`;
-                            document.getElementById("close")?.addEventListener("click", () => done());
-                        }
-                    } else { alert("недостаточно"); }
                 });
             }
         }
 
+        bankAction(player, container, done) {
+            if (player.isBot) {
+                let amount = 0;
+                if (this.difficulty === "hard") amount = Math.min(player.money, Math.floor(Math.random() * 7) + 2);
+                else if (this.difficulty === "medium") amount = Math.min(player.money, Math.floor(Math.random() * 5) + 1);
+                else amount = Math.min(player.money, Math.floor(Math.random() * 3));
+                if (amount > 0) {
+                    player.money -= amount;
+                    player.bankMoney += amount;
+                    container.innerHTML = `<p>🤖 ${player.name} положил в банк ${amount} монет. На счету: ${player.bankMoney}</p>`;
+                } else {
+                    container.innerHTML = `<p>🤖 ${player.name} ничего не положил в банк.</p>`;
+                }
+                setTimeout(() => done(), 1200);
+            } else {
+                container.innerHTML = `<h4>🏦 Загадка Сберкова</h4><p>«Что можно купить, но нельзя продать?»</p>`;
+                const answerBtn = document.createElement("button");
+                answerBtn.innerText = "Ответить";
+                answerBtn.onclick = () => {
+                    let ans = prompt("Твой ответ:", "здоровье");
+                    if (ans && ans.toLowerCase().includes("здоровье")) {
+                        player.bankMoney += 1;
+                        container.innerHTML = `<p>✨ Верно! +1 монета в банк. На счету: ${player.bankMoney}💰</p>`;
+                        playSound("success");
+                        setTimeout(() => done(), 1200);
+                    } else {
+                        playSound("error");
+                        container.innerHTML = `<p>📖 Неверно, но ты можешь положить деньги в банк. Сколько?</p>`;
+                        let input = document.createElement("input");
+                        input.type = "number";
+                        input.placeholder = "сумма";
+                        let submit = document.createElement("button");
+                        submit.innerText = "Вложить";
+                        submit.onclick = () => {
+                            let val = parseInt(input.value);
+                            if (!isNaN(val) && val > 0 && player.money >= val) {
+                                player.money -= val;
+                                player.bankMoney += val;
+                                container.innerHTML = `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
+                                playSound("success");
+                            } else { container.innerHTML = `<p>❌ Не вышло. Ход окончен.</p>`; playSound("error"); }
+                            setTimeout(() => done(), 1000);
+                        };
+                        container.appendChild(input);
+                        container.appendChild(submit);
+                        return;
+                    }
+                };
+                container.appendChild(answerBtn);
+            }
+        }
+
+        dreamAction(player, container, done) {
+            if (player.isBot) {
+                if (!player.dreamTarget) {
+                    const target = DREAM_TARGETS[Math.floor(Math.random() * DREAM_TARGETS.length)];
+                    player.dreamTarget = target;
+                    player.dreamFund = 0;
+                }
+                let needed = player.dreamTarget.cost - player.dreamFund;
+                let maxToSave = Math.min(player.money, needed);
+                let saveAmount = 0;
+                if (this.difficulty === "hard") saveAmount = maxToSave;
+                else if (this.difficulty === "medium") saveAmount = Math.floor(maxToSave * (0.3 + Math.random() * 0.5));
+                else saveAmount = Math.floor(maxToSave * Math.random());
+                if (saveAmount > 0) {
+                    player.money -= saveAmount;
+                    player.dreamFund += saveAmount;
+                    container.innerHTML = `<p>🤖 ${player.name} отложил ${saveAmount} монет на ${player.dreamTarget.name}. Осталось ${player.dreamTarget.cost - player.dreamFund} монет.</p>`;
+                    if (player.dreamFund >= player.dreamTarget.cost) {
+                        player.money += (player.dreamFund - player.dreamTarget.cost);
+                        player.dreamFund = 0;
+                        if (!player.tokens.includes("Мечтатель")) player.tokens.push("Мечтатель");
+                        container.innerHTML += `<p>✨ Мечта сбылась! + жетон Мечтатель ✨</p>`;
+                    }
+                } else {
+                    container.innerHTML = `<p>🤖 ${player.name} ничего не отложил на мечту.</p>`;
+                }
+                setTimeout(() => done(), 1500);
+            } else {
+                // ... человеческая версия (без изменений)
+                if (!player.dreamTarget) {
+                    container.innerHTML = `<h4>🐷 Фабрика мечты</h4><p>Выбери мечту:</p>`;
+                    DREAM_TARGETS.forEach(d => {
+                        let btn = document.createElement("button");
+                        btn.innerText = `${d.name} (${d.cost}💰)`;
+                        btn.onclick = () => {
+                            player.dreamTarget = d;
+                            player.dreamFund = 0;
+                            container.innerHTML = `<p>🎯 Мечта: ${d.name}. Внеси монеты!</p><input id="dreamAmount" type="number" placeholder="сумма"><button id="saveDream">Отложить</button>`;
+                            document.getElementById("saveDream")?.addEventListener("click", () => {
+                                let val = parseInt(document.getElementById("dreamAmount").value);
+                                if (!isNaN(val) && val > 0 && player.money >= val) {
+                                    player.money -= val;
+                                    player.dreamFund += val;
+                                    if (player.dreamFund >= player.dreamTarget.cost) {
+                                        player.money += (player.dreamFund - player.dreamTarget.cost);
+                                        player.dreamFund = 0;
+                                        if (!player.tokens.includes("Мечтатель")) player.tokens.push("Мечтатель");
+                                        container.innerHTML = `<p>✨ Мечта сбылась! + жетон Мечтатель ✨</p>`;
+                                        playSound("success");
+                                        setTimeout(() => done(), 1200);
+                                    } else {
+                                        container.innerHTML = `<p>⭐ Отложено ${val}. Осталось накопить ${player.dreamTarget.cost - player.dreamFund} монет.</p><button id="cont">Продолжить</button>`;
+                                        document.getElementById("cont")?.addEventListener("click", () => done());
+                                    }
+                                } else { alert("неверная сумма"); playSound("error"); }
+                            });
+                        };
+                        container.appendChild(btn);
+                    });
+                } else {
+                    container.innerHTML = `<p>🎯 Копишь на ${player.dreamTarget.name} (${player.dreamFund}/${player.dreamTarget.cost})</p><input id="extra" placeholder="внести"><button id="addMore">Внести</button>`;
+                    document.getElementById("addMore")?.addEventListener("click", () => {
+                        let val = parseInt(document.getElementById("extra").value);
+                        if (!isNaN(val) && val > 0 && player.money >= val) {
+                            player.money -= val;
+                            player.dreamFund += val;
+                            if (player.dreamFund >= player.dreamTarget.cost) {
+                                player.money += (player.dreamFund - player.dreamTarget.cost);
+                                player.dreamFund = 0;
+                                if (!player.tokens.includes("Мечтатель")) player.tokens.push("Мечтатель");
+                                container.innerHTML = `<p>🏆 Мечта исполнена! +жетон Мечтатель</p>`;
+                                playSound("success");
+                                setTimeout(() => done(), 1200);
+                            } else { container.innerHTML = `<p>💰 Отложено. Теперь ${player.dreamFund}/${player.dreamTarget.cost}</p><button id="close">Далее</button>`;
+                                document.getElementById("close")?.addEventListener("click", () => done());
+                            }
+                        } else { alert("недостаточно"); playSound("error"); }
+                    });
+                }
+            }
+        }
+
         surpriseAction(player, container, done) {
-            const events = [
-                { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
-                { text: "💥 Сломался рюкзак: -2 монеты", deltaMoney: -2, type: "bad" },
-                { text: "🤝 Помоги другу: отдай 2 монеты или потеряй жетон Дружбы", type: "choice" }
-            ];
-            let ev = events[Math.floor(Math.random() * events.length)];
-            container.innerHTML = `<h4>🎲 Вихрь сюрпризов</h4><p>${ev.text}</p>`;
-            if (ev.type === "good") {
-                player.money += ev.deltaMoney;
-                container.innerHTML += `<p>✅ Теперь у тебя ${player.money}💰</p>`;
-                setTimeout(() => done(), 1500);
-            } else if (ev.type === "bad") {
-                player.money = Math.max(0, player.money + ev.deltaMoney);
-                container.innerHTML += `<p>😟 Осталось ${player.money}💰</p>`;
-                setTimeout(() => done(), 1500);
-            } else if (ev.type === "choice") {
-                let helpBtn = document.createElement("button");
-                helpBtn.innerText = "Помочь (+ жетон Дружба)";
-                helpBtn.onclick = () => {
-                    if (player.money >= 2) {
+            // Выбираем случайное событие из расширяемого конфига
+            let ev = SURPRISE_EVENTS[Math.floor(Math.random() * SURPRISE_EVENTS.length)];
+            if (player.isBot) {
+                if (ev.type === "good") {
+                    player.money += ev.deltaMoney;
+                    container.innerHTML = `<p>🤖 ${player.name}: ${ev.text} Теперь у него ${player.money}💰</p>`;
+                } else if (ev.type === "bad") {
+                    player.money = Math.max(0, player.money + ev.deltaMoney);
+                    container.innerHTML = `<p>🤖 ${player.name}: ${ev.text} Осталось ${player.money}💰</p>`;
+                } else if (ev.type === "choice") {
+                    const hasToken = player.tokens.includes("Дружба");
+                    if (player.money >= 2 && !hasToken && Math.random() < 0.5) {
                         player.money -= 2;
-                        if (!player.tokens.includes("Дружба")) player.tokens.push("Дружба");
-                        container.innerHTML = `<p>🤗 Ты помог! Получен жетон Дружбы</p>`;
-                    } else { container.innerHTML = `<p>😔 Нет денег помочь...</p>`; }
-                    setTimeout(() => done(), 1200);
-                };
-                let skipBtn = document.createElement("button");
-                skipBtn.innerText = "Отказаться (потерять жетон, если есть)";
-                skipBtn.onclick = () => {
-                    const idx = player.tokens.indexOf("Дружба");
-                    if (idx !== -1) player.tokens.splice(idx,1);
-                    container.innerHTML = `<p>😶 Жетон Дружбы утерян (если был)</p>`;
-                    setTimeout(() => done(), 1000);
-                };
-                container.appendChild(helpBtn);
-                container.appendChild(skipBtn);
+                        player.tokens.push("Дружба");
+                        container.innerHTML = `<p>🤖 ${player.name} помог другу! Получен жетон Дружбы</p>`;
+                    } else {
+                        container.innerHTML = `<p>🤖 ${player.name} отказался помогать.</p>`;
+                    }
+                } else if (ev.type === "choiceGift") {
+                    if (player.money >= 3 && !player.tokens.includes("Дружба") && Math.random() < 0.6) {
+                        player.money -= 3;
+                        player.tokens.push("Дружба");
+                        container.innerHTML = `<p>🤖 ${player.name} купил подарок и получил жетон Дружбы!</p>`;
+                    } else {
+                        container.innerHTML = `<p>🤖 ${player.name} не купил подарок.</p>`;
+                    }
+                }
+                setTimeout(() => done(), 1500);
+            } else {
+                container.innerHTML = `<h4>🎲 Вихрь сюрпризов</h4><p>${ev.text}</p>`;
+                if (ev.type === "good") {
+                    player.money += ev.deltaMoney;
+                    container.innerHTML += `<p>✅ Теперь у тебя ${player.money}💰</p>`;
+                    playSound("success");
+                    setTimeout(() => done(), 1500);
+                } else if (ev.type === "bad") {
+                    player.money = Math.max(0, player.money + ev.deltaMoney);
+                    container.innerHTML += `<p>😟 Осталось ${player.money}💰</p>`;
+                    playSound("error");
+                    setTimeout(() => done(), 1500);
+                } else if (ev.type === "choice") {
+                    let helpBtn = document.createElement("button");
+                    helpBtn.innerText = "Помочь (+ жетон Дружба)";
+                    helpBtn.onclick = () => {
+                        if (player.money >= 2) {
+                            player.money -= 2;
+                            if (!player.tokens.includes("Дружба")) player.tokens.push("Дружба");
+                            container.innerHTML = `<p>🤗 Ты помог! Получен жетон Дружбы</p>`;
+                            playSound("success");
+                        } else { container.innerHTML = `<p>😔 Нет денег помочь...</p>`; playSound("error"); }
+                        setTimeout(() => done(), 1200);
+                    };
+                    let skipBtn = document.createElement("button");
+                    skipBtn.innerText = "Отказаться (потерять жетон, если есть)";
+                    skipBtn.onclick = () => {
+                        const idx = player.tokens.indexOf("Дружба");
+                        if (idx !== -1) player.tokens.splice(idx,1);
+                        container.innerHTML = `<p>😶 Жетон Дружбы утерян (если был)</p>`;
+                        playSound("error");
+                        setTimeout(() => done(), 1000);
+                    };
+                    container.appendChild(helpBtn);
+                    container.appendChild(skipBtn);
+                } else if (ev.type === "choiceGift") {
+                    let giftBtn = document.createElement("button");
+                    giftBtn.innerText = "Купить подарок (-3 монеты, +жетон Дружбы)";
+                    giftBtn.onclick = () => {
+                        if (player.money >= 3) {
+                            player.money -= 3;
+                            if (!player.tokens.includes("Дружба")) player.tokens.push("Дружба");
+                            container.innerHTML = `<p>🎁 Ты купил подарок! Получен жетон Дружбы</p>`;
+                            playSound("success");
+                        } else { container.innerHTML = `<p>😔 Не хватает денег...</p>`; playSound("error"); }
+                        setTimeout(() => done(), 1200);
+                    };
+                    container.appendChild(giftBtn);
+                }
             }
         }
 
@@ -667,17 +899,39 @@
                 container.innerHTML += `<p>🏆 Ты собрал 3 жетона и прибыл на Ярмарку! ПОБЕДА!</p>`;
                 this.winner = player;
                 this.gameActive = false;
+                playSound("success");
                 done();
             } else {
                 container.innerHTML += `<p>У тебя ${player.tokens.length}/3 жетонов. Собери больше и возвращайся!</p>`;
+                playSound("error");
                 setTimeout(() => done(), 1500);
             }
         }
 
         nextTurn() {
             this.waitingForAction = false;
+            this.stopTurnTimer();
             this.currentTurn = (this.currentTurn + 1) % this.players.length;
             if (this.players.every(p => p.hasFinished)) this.gameActive = false;
+            renderGameUI(this);
+            const nextPlayer = this.getCurrentPlayer();
+            if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished) {
+                this.startTurnTimer();
+            }
+            if (this.gameActive && nextPlayer.isBot && !this.waitingForAction) {
+                document.getElementById("botMessage").innerHTML = `🤖 Ход бота ${nextPlayer.name}...`;
+                setTimeout(async () => {
+                    if (this.gameActive && !this.waitingForAction && this.getCurrentPlayer().id === nextPlayer.id) {
+                        await this.rollAndMove();
+                        renderGameUI(this);
+                        this.applyEndRoundInterest();
+                        renderGameUI(this);
+                        document.getElementById("botMessage").innerHTML = "";
+                    }
+                }, 800);
+            } else {
+                document.getElementById("botMessage").innerHTML = "";
+            }
         }
 
         applyEndRoundInterest() {
@@ -685,7 +939,7 @@
         }
     }
 
-    // ---------- Отрисовка игры ----------
+    // --- Отрисовка UI ---
     function renderGameUI(engine) {
         if (!engine) return;
         const boardDiv = document.getElementById("boardContainer");
@@ -708,298 +962,70 @@
         engine.players.forEach(p => {
             let card = document.createElement("div");
             card.className = "player-card";
-            card.innerHTML = `<b>${p.name}</b> 💰${p.money}  🏦${p.bankMoney}<br>🎖️жетоны: ${p.tokens.join(", ") || "—"}<br>📍${BOARD_CELLS[p.position].name}`;
+            card.innerHTML = `<b>${p.name}${p.isBot ? ' 🤖' : ' 👤'}</b> 💰${p.money}  🏦${p.bankMoney}<br>🎖️жетоны: ${p.tokens.join(", ") || "—"}<br>📍${BOARD_CELLS[p.position].name}`;
             listDiv.appendChild(card);
         });
         const cur = engine.getCurrentPlayer();
-        document.getElementById("turnInfo").innerHTML = `🎲 Ход: ${cur.name} (монет: ${cur.money}💰 | жетоны: ${cur.tokens.length})`;
+        document.getElementById("turnInfo").innerHTML = `🎲 Ход: ${cur.name} (монет: ${cur.money}💰 | жетоны: ${cur.tokens.length}) <span id="timerDisplay" class="timer"></span>`;
         const rollBtn = document.getElementById("rollDiceBtn");
         if (!engine.gameActive && engine.winner) {
             document.getElementById("turnInfo").innerHTML = `🏆 ПОБЕДИТЕЛЬ: ${engine.winner.name}!!! 🏆`;
             rollBtn.disabled = true;
         } else {
-            rollBtn.disabled = false;
+            rollBtn.disabled = cur.isBot;
         }
+        if (!cur.isBot && engine.gameActive && !cur.hasFinished) engine.startTurnTimer();
     }
 
-    // Сохранение игры в Firebase
-    function saveGameToFirebase(game) {
-        if (!currentRoomRef) return;
-        const gameData = {
-            players: game.players,
-            currentTurn: game.currentTurn,
-            gameActive: game.gameActive,
-            winner: game.winner,
-            waitingForAction: game.waitingForAction
-        };
-        currentRoomRef.child('gameState').set(gameData);
-    }
-
-    // Загрузка игры из Firebase
-    function loadGameFromFirebase(snapshot) {
-        if (!snapshot.exists()) return;
-        const data = snapshot.val();
-        if (!data.players) return;
-        const game = new GameController(data.players.map(p => ({ name: p.name })), BOARD_CELLS);
-        game.players = data.players;
-        game.currentTurn = data.currentTurn;
-        game.gameActive = data.gameActive;
-        game.winner = data.winner;
-        game.waitingForAction = data.waitingForAction;
+    let activeGame = null;
+    function startSingleGame() {
+        const botCount = parseInt(document.getElementById("botCount").value);
+        const difficulty = document.getElementById("difficulty").value;
+        const playerName = document.getElementById("playerName").value.trim() || "Хранитель";
+        const players = [{ name: playerName, isBot: false }];
+        for (let i = 0; i < botCount; i++) players.push({ name: `Бот ${i+1}`, isBot: true });
+        const game = new GameController(players, BOARD_CELLS);
+        game.difficulty = difficulty;
         activeGame = game;
+        document.getElementById("setupPanel").style.display = "none";
+        document.getElementById("gameplayArea").style.display = "block";
         renderGameUI(activeGame);
-    }
-
-    // ---------- Лобби (Firebase) ----------
-    function updateRoomUI(roomData) {
-        if (!roomData) {
-            document.getElementById("roomInfo").innerHTML = "";
-            document.getElementById("roomPlayersList").innerHTML = "";
-            document.getElementById("startGameBtn").style.display = "none";
-            document.getElementById("leaveRoomBtn").style.display = "none";
-            return;
-        }
-        const players = roomData.players || [];
-        const owner = roomData.owner;
-        document.getElementById("roomInfo").innerHTML = `<p>🏠 Комната: <strong>${currentRoomCode}</strong> (создатель: ${owner})</p>`;
-        let playersHtml = `<h4>👥 Игроки (${players.length}/4):</h4>`;
-        players.forEach(p => {
-            playersHtml += `<div class="player-item">${p.name}`;
-            if (isRoomOwner && p.name !== owner) {
-                playersHtml += `<button class="kick-btn" data-name="${p.name}">Кик</button>`;
-            }
-            playersHtml += `</div>`;
-        });
-        document.getElementById("roomPlayersList").innerHTML = playersHtml;
-        if (isRoomOwner && players.length >= 2 && players.length <= 4) {
-            document.getElementById("startGameBtn").style.display = "inline-block";
-        } else {
-            document.getElementById("startGameBtn").style.display = "none";
-        }
-        document.getElementById("leaveRoomBtn").style.display = "inline-block";
-        // Добавляем обработчики кика
-        if (isRoomOwner) {
-            document.querySelectorAll(".kick-btn").forEach(btn => {
-                btn.addEventListener("click", (e) => {
-                    const name = btn.dataset.name;
-                    kickPlayer(name);
-                });
-            });
+        if (activeGame.getCurrentPlayer().isBot) {
+            document.getElementById("botMessage").innerHTML = `🤖 Ход бота ${activeGame.getCurrentPlayer().name}...`;
+            setTimeout(async () => {
+                if (activeGame && activeGame.gameActive && !activeGame.waitingForAction && activeGame.getCurrentPlayer().isBot) {
+                    await activeGame.rollAndMove();
+                    renderGameUI(activeGame);
+                    activeGame.applyEndRoundInterest();
+                    renderGameUI(activeGame);
+                    document.getElementById("botMessage").innerHTML = "";
+                }
+            }, 800);
         }
     }
 
-    function resetLobby() {
-        if (currentRoomRef) {
-            currentRoomRef.off();
-            currentRoomRef = null;
-        }
-        currentRoomCode = null;
-        currentPlayerName = null;
-        isRoomOwner = false;
+    function resetToSetup() {
+        if (activeGame) activeGame.stopTurnTimer();
         activeGame = null;
-        document.getElementById("lobbySection").style.display = "none";
+        document.getElementById("setupPanel").style.display = "block";
         document.getElementById("gameplayArea").style.display = "none";
-        document.getElementById("joinNameContainer").style.display = "none";
-        document.getElementById("lobbySection").style.display = "block";
-        document.getElementById("roomInfo").innerHTML = "";
-        document.getElementById("roomPlayersList").innerHTML = "";
+        document.getElementById("actionDetails").innerHTML = "";
+        document.getElementById("botMessage").innerHTML = "";
     }
 
-    function createRoom() {
-        const code = Math.floor(1000 + Math.random() * 9000).toString();
-        const ownerName = prompt("Введите ваше имя (создатель комнаты):", "Хозяин");
-        if (!ownerName) return;
-        const roomData = {
-            owner: ownerName,
-            players: [{ name: ownerName }],
-            createdAt: Date.now(),
-            gameStarted: false
-        };
-        database.ref('rooms/' + code).set(roomData).then(() => {
-            currentRoomCode = code;
-            currentPlayerName = ownerName;
-            isRoomOwner = true;
-            currentRoomRef = database.ref('rooms/' + code);
-            // Слушаем изменения комнаты
-            currentRoomRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    resetLobby();
-                    alert("Комната была удалена.");
-                    return;
-                }
-                updateRoomUI(data);
-                if (data.gameStarted && !activeGame && document.getElementById("gameplayArea").style.display !== "block") {
-                    // Игра начата, загружаем её
-                    document.getElementById("lobbySection").style.display = "none";
-                    document.getElementById("gameplayArea").style.display = "block";
-                    if (currentGameStateListener) currentGameStateListener.off();
-                    currentGameStateListener = currentRoomRef.child('gameState').on('value', loadGameFromFirebase);
-                }
-            });
-            document.getElementById("joinNameContainer").style.display = "none";
-            document.getElementById("lobbySection").style.display = "block";
-        }).catch(err => alert("Ошибка: " + err.message));
-    }
-
-    function joinRoom() {
-        const code = document.getElementById("roomCodeInput").value.trim();
-        if (!code) { alert("Введите код комнаты"); return; }
-        database.ref('rooms/' + code).once('value').then(snapshot => {
-            const room = snapshot.val();
-            if (!room) { alert("Комната не найдена"); return; }
-            if (room.players.length >= 4) { alert("Комната полна"); return; }
-            document.getElementById("joinNameContainer").style.display = "block";
-            const confirmBtn = document.getElementById("confirmJoinBtn");
-            const nameInput = document.getElementById("joinPlayerName");
-            confirmBtn.onclick = () => {
-                const playerName = nameInput.value.trim();
-                if (!playerName) { alert("Введите имя"); return; }
-                if (room.players.some(p => p.name === playerName)) { alert("Имя уже занято в комнате"); return; }
-                const newPlayers = [...room.players, { name: playerName }];
-                database.ref('rooms/' + code).update({ players: newPlayers }).then(() => {
-                    currentRoomCode = code;
-                    currentPlayerName = playerName;
-                    isRoomOwner = false;
-                    currentRoomRef = database.ref('rooms/' + code);
-                    currentRoomRef.on('value', (snapshot) => {
-                        const data = snapshot.val();
-                        if (!data) {
-                            resetLobby();
-                            alert("Комната была удалена.");
-                            return;
-                        }
-                        updateRoomUI(data);
-                        if (data.gameStarted && !activeGame && document.getElementById("gameplayArea").style.display !== "block") {
-                            document.getElementById("lobbySection").style.display = "none";
-                            document.getElementById("gameplayArea").style.display = "block";
-                            if (currentGameStateListener) currentGameStateListener.off();
-                            currentGameStateListener = currentRoomRef.child('gameState').on('value', loadGameFromFirebase);
-                        }
-                    });
-                    document.getElementById("joinNameContainer").style.display = "none";
-                    nameInput.value = "";
-                    document.getElementById("lobbySection").style.display = "block";
-                }).catch(err => alert("Ошибка: " + err.message));
-            };
-        }).catch(err => alert("Ошибка: " + err.message));
-    }
-
-    function kickPlayer(name) {
-        if (!isRoomOwner) return;
-        database.ref('rooms/' + currentRoomCode).once('value').then(snapshot => {
-            const room = snapshot.val();
-            if (!room) return;
-            const newPlayers = room.players.filter(p => p.name !== name);
-            if (newPlayers.length === 0) {
-                database.ref('rooms/' + currentRoomCode).remove().then(() => resetLobby());
-            } else {
-                database.ref('rooms/' + currentRoomCode).update({ players: newPlayers });
-            }
-        });
-    }
-
-    function startGame() {
-        if (!isRoomOwner) { alert("Только создатель комнаты может начать игру"); return; }
-        database.ref('rooms/' + currentRoomCode).once('value').then(snapshot => {
-            const room = snapshot.val();
-            if (!room || room.players.length < 2) { alert("Нужно минимум 2 игрока"); return; }
-            const playersObj = room.players.map((p, idx) => ({ id: idx, name: p.name }));
-            const game = new GameController(playersObj, BOARD_CELLS);
-            const gameData = {
-                players: game.players,
-                currentTurn: game.currentTurn,
-                gameActive: game.gameActive,
-                winner: game.winner,
-                waitingForAction: game.waitingForAction
-            };
-            database.ref('rooms/' + currentRoomCode).update({ gameStarted: true, gameState: gameData }).then(() => {
-                document.getElementById("lobbySection").style.display = "none";
-                document.getElementById("gameplayArea").style.display = "block";
-                activeGame = game;
-                renderGameUI(activeGame);
-                if (currentGameStateListener) currentGameStateListener.off();
-                currentGameStateListener = currentRoomRef.child('gameState').on('value', loadGameFromFirebase);
-            });
-        });
-    }
-
-    function leaveRoom() {
-        if (currentRoomCode) {
-            if (isRoomOwner) {
-                database.ref('rooms/' + currentRoomCode).remove().then(() => resetLobby());
-            } else {
-                database.ref('rooms/' + currentRoomCode).once('value').then(snapshot => {
-                    const room = snapshot.val();
-                    if (room) {
-                        const newPlayers = room.players.filter(p => p.name !== currentPlayerName);
-                        if (newPlayers.length === 0) {
-                            database.ref('rooms/' + currentRoomCode).remove().then(() => resetLobby());
-                        } else {
-                            database.ref('rooms/' + currentRoomCode).update({ players: newPlayers }).then(() => resetLobby());
-                        }
-                    } else {
-                        resetLobby();
-                    }
-                });
-            }
-        } else {
-            resetLobby();
-        }
-    }
-
-    // ---------- Инициализация Firebase ----------
-    function initFirebase(config) {
-        try {
-            firebase.initializeApp(config);
-            database = firebase.database();
-            document.getElementById("firebaseConfigPanel").style.display = "none";
-            document.getElementById("lobbySection").style.display = "block";
-            document.getElementById("firebaseStatus").innerHTML = "✅ Firebase подключена!";
-        } catch (e) {
-            document.getElementById("firebaseStatus").innerHTML = "❌ Ошибка подключения: " + e.message;
-        }
-    }
-
-    document.getElementById("initFirebaseBtn").onclick = () => {
-        const config = {
-            apiKey: document.getElementById("apiKey").value,
-            authDomain: document.getElementById("authDomain").value,
-            databaseURL: document.getElementById("databaseURL").value,
-            projectId: document.getElementById("projectId").value,
-            storageBucket: document.getElementById("storageBucket").value,
-            messagingSenderId: document.getElementById("messagingSenderId").value,
-            appId: document.getElementById("appId").value
-        };
-        if (!config.apiKey || !config.databaseURL) {
-            alert("Заполните хотя бы apiKey и databaseURL");
-            return;
-        }
-        initFirebase(config);
-    };
-
-    // Обработчики UI
-    document.getElementById("createRoomBtn").onclick = createRoom;
-    document.getElementById("joinRoomBtn").onclick = joinRoom;
-    document.getElementById("startGameBtn").onclick = startGame;
-    document.getElementById("leaveRoomBtn").onclick = leaveRoom;
-    document.getElementById("backToLobbyBtn").onclick = () => {
-        resetLobby();
-        document.getElementById("gameplayArea").style.display = "none";
-        document.getElementById("lobbySection").style.display = "block";
-        if (currentGameStateListener) currentGameStateListener.off();
-    };
+    document.getElementById("startSingleGameBtn").onclick = startSingleGame;
+    document.getElementById("newGameBtn").onclick = resetToSetup;
     document.getElementById("rollDiceBtn").addEventListener("click", async () => {
         if(activeGame && activeGame.gameActive && !activeGame.waitingForAction) {
             const currentPlayer = activeGame.getCurrentPlayer();
-            if (currentPlayer.name !== currentPlayerName) {
-                alert("Сейчас не ваш ход!");
+            if (currentPlayer.isBot) {
+                alert("Сейчас ход бота, подождите!");
                 return;
             }
             await activeGame.rollAndMove();
+            renderGameUI(activeGame);
             activeGame.applyEndRoundInterest();
             renderGameUI(activeGame);
-            saveGameToFirebase(activeGame);
         } else alert("Сейчас нельзя бросить кубик");
     });
 
