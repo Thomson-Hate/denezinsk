@@ -21,7 +21,6 @@
             flex-direction: column;
         }
 
-        /* Фон с анимированными символами */
         .bg-letters {
             position: fixed;
             inset: 0;
@@ -44,7 +43,6 @@
             100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Скролл-бар */
         #scrollBar {
             position: fixed;
             top: 0;
@@ -56,7 +54,6 @@
             border-radius: 0 0 4px 0;
         }
 
-        /* Верхняя панель (исправленное позиционирование) */
         .top-bar {
             position: fixed;
             top: 20px;
@@ -66,7 +63,7 @@
             max-width: 1280px;
             height: 70px;
             border-radius: 38px;
-            backdrop-filter: blur(22px) saturate(180%);
+            backdrop-filter: blur(28px) saturate(220%);
             background: rgba(20, 20, 32, 0.75);
             display: flex;
             justify-content: space-between;
@@ -75,7 +72,7 @@
             z-index: 1100;
             transition: 0.3s;
             border: 1px solid rgba(255, 215, 120, 0.35);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
         }
         .top-bar.scrolled {
             top: 8px;
@@ -91,7 +88,6 @@
             color: transparent;
         }
 
-        /* Переключатель вкладок */
         .toggle {
             position: relative;
             width: 320px;
@@ -112,7 +108,11 @@
             font-weight: 500;
             cursor: pointer;
             z-index: 2;
-            transition: 0.2s;
+            transition: all 0.2s;
+        }
+        .toggle button:hover {
+            transform: scale(1.02);
+            text-shadow: 0 0 6px rgba(255,200,100,0.8);
         }
         .toggle button.active {
             font-weight: 700;
@@ -122,7 +122,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 25%;
+            width: calc(100% / 3);
             height: 100%;
             border-radius: 40px;
             background: rgba(255, 200, 80, 0.3);
@@ -131,7 +131,6 @@
             transition: left 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
-        /* Основные блоки */
         .tab-block {
             width: 90%;
             max-width: 1100px;
@@ -162,7 +161,6 @@
             box-shadow: 0 20px 35px rgba(0,0,0,0.3);
         }
 
-        /* Игровое поле */
         .game-panel {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 40px;
@@ -187,7 +185,6 @@
             font-weight: 500;
             border: 1px solid rgba(255, 200, 100, 0.4);
             transition: all 0.3s;
-            position: relative;
         }
         .cell.active {
             background: rgba(255, 200, 80, 0.35);
@@ -218,7 +215,6 @@
             transform: scale(1.1);
         }
 
-        /* Список игроков */
         .players-list {
             display: flex;
             gap: 20px;
@@ -257,6 +253,11 @@
             cursor: pointer;
             transition: all 0.2s;
             font-size: 1rem;
+        }
+        button:hover {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+            box-shadow: 0 0 12px rgba(255,200,100,0.6);
         }
         button:active { transform: scale(0.96); }
         .action-area {
@@ -308,7 +309,50 @@
             border-radius: 28px;
             text-align: center;
             font-style: italic;
-            animation: fadeIn 0.3s;
+        }
+        /* Новая анимация кубика — вращение на месте */
+        .dice-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 30px 40px;
+            text-align: center;
+            border: 1px solid gold;
+            box-shadow: 0 0 50px rgba(0,0,0,0.7);
+            animation: fadeInScale 0.3s ease;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        .dice {
+            font-size: 6rem;
+            display: inline-block;
+            animation: diceRoll 0.4s cubic-bezier(0.2, 1.2, 0.4, 1) forwards;
+        }
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.2); }
+            50% { transform: rotate(180deg) scale(1.3); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .dice-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #ffc857;
+            animation: fadeNumber 0.2s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+        @keyframes fadeNumber {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -336,7 +380,7 @@
 <div id="homeTab" class="tab-block active">
     <div class="glass-card">
         <h2>🎲 Тайна Золотого Дракона</h2>
-        <p>Добро пожаловать в город Денежкинск! Помогите жителям навести порядок в финансах, собирайте жетоны мудрости и станьте Почётным гражданином. <br> <strong>Цель:</strong> первым собрать 3 разных жетона («Мастер», «Заботливый», «Мечтатель», «Дружба») и добраться до «Ярмарки талантов».</p>
+        <p>Добро пожаловать в город Денежкинск! Помогите жителям навести порядок в финансах, собирайте жетоны мудрости и станьте Почётным гражданином. <br> <strong>Цель:</strong> первым собрать 3 разных жетона («Мастер», «Заботливый», «Мечтатель», «Дружба», «Мудрость») и добраться до «Ярмарки талантов».</p>
     </div>
     <div class="glass-card">
         <h3>📜 Как играть (одиночный режим)</h3>
@@ -345,6 +389,7 @@
         • Ходите по очереди, бросайте кубик и принимайте финансовые решения.<br>
         • На ход даётся 60 секунд. Не успели — ход пропускается.<br>
         • Боты действуют автоматически в зависимости от сложности.<br>
+        • Если вы попали на Ярмарку, но у вас меньше 3 разных жетонов — возвращайтесь на старт и продолжайте путь!<br>
         • Первый, кто соберёт 3 разных жетона и попадёт на «Ярмарку талантов», побеждает!</p>
     </div>
 </div>
@@ -403,24 +448,67 @@
 <footer>© Денежкинск · учимся управлять мечтами</footer>
 
 <script>
-    // ---------- Конфиг событий (расширяемый) ----------
-    const SURPRISE_EVENTS = [
-        { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
-        { text: "💥 Сломался рюкзак: -2 монеты", deltaMoney: -2, type: "bad" },
-        { text: "📚 Выиграл в лотерею: +5 монет!", deltaMoney: 5, type: "good" },
-        { text: "🚌 Проездной закончился: -1 монета", deltaMoney: -1, type: "bad" },
-        { text: "🤝 Помоги другу: отдай 2 монеты или потеряй жетон Дружбы", type: "choice" },
-        { text: "🎉 Нашёл клад: +4 монеты", deltaMoney: 4, type: "good" },
-        { text: "💸 Заплатил налог: -3 монеты", deltaMoney: -3, type: "bad" },
-        { text: "🍦 Угостил мороженым: -1 монета, + радость", deltaMoney: -1, type: "bad" },
-        { text: "🎁 Подарок от бабушки: +2 монеты", deltaMoney: 2, type: "good" },
-        { text: "🧸 Купил игрушку в подарок: -3 монеты, получил жетон Дружбы", type: "choiceGift" } // особый случай
-    ];
+    // ====================== КОНФИГУРАЦИЯ ИГРЫ ======================
+    const GAME_CONFIG = {
+        boardCells: [
+            { name: "🏛️ Гильдия мастеров", type: "guild" },
+            { name: "🛒 Лавка Хочу/Надо", type: "shop" },
+            { name: "🏦 Хранилище Сберкова", type: "bank" },
+            { name: "🐷 Фабрика мечты", type: "dream" },
+            { name: "🎲 Вихрь сюрпризов", type: "surprise" },
+            { name: "🏛️ Гильдия мастеров", type: "guild" },
+            { name: "🛒 Лавка Хочу/Надо", type: "shop" },
+            { name: "🏦 Хранилище Сберкова", type: "bank" },
+            { name: "🐷 Фабрика мечты", type: "dream" },
+            { name: "🎲 Вихрь сюрпризов", type: "surprise" },
+            { name: "🏛️ Гильдия мастеров", type: "guild" },
+            { name: "🎪 Ярмарка талантов", type: "fair" }
+        ],
+        // Новые профессии (более нейтральные)
+        guildProfessions: [
+            { name: "🧮 Математик", task: "Реши пример: 15 + 7 = ? (Ответ напиши в консоли или скажи ведущему)" },
+            { name: "✍️ Писатель", task: "Придумай короткую историю про монетку" },
+            { name: "🎨 Художник", task: "Нарисуй монетку с закрытыми глазами" }
+        ],
+        shopGoods: [
+            { name: "🥖 Хлеб (Надо)", cost: 2, need: true },
+            { name: "🎫 Проездной (Надо)", cost: 3, need: true },
+            { name: "🧸 Плюшевый мишка (Хочу)", cost: 5, need: false },
+            { name: "📚 Книга (Надо)", cost: 4, need: true },
+            { name: "🍦 Мороженое (Хочу)", cost: 2, need: false }
+        ],
+        bankRiddles: [
+            { question: "Что можно купить, но нельзя продать?", answers: ["здоровье", "здоровье", "здоровье"] },
+            { question: "Что дороже всего на свете?", answers: ["здоровье", "жизнь", "счастье"] },
+            { question: "Что не купишь ни за какие деньги?", answers: ["здоровье", "время", "любовь", "дружбу"] }
+        ],
+        dreamTargets: [
+            { name: "Велосипед", cost: 25 },
+            { name: "Планшет", cost: 40 },
+            { name: "Робот-игрушка", cost: 30 },
+            { name: "Аквапарк", cost: 35 },
+            { name: "Настольная игра", cost: 20 }
+        ],
+        surpriseEvents: [
+            { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
+            { text: "💥 Сломался рюкзак: -2 монеты", deltaMoney: -2, type: "bad" },
+            { text: "📚 Выиграл в лотерею: +5 монет!", deltaMoney: 5, type: "good" },
+            { text: "🚌 Проездной закончился: -1 монета", deltaMoney: -1, type: "bad" },
+            { text: "🤝 Помоги другу: отдай 2 монеты или потеряй жетон Дружбы", type: "choice" },
+            { text: "🎉 Нашёл клад: +4 монеты", deltaMoney: 4, type: "good" },
+            { text: "💸 Заплатил налог: -3 монеты", deltaMoney: -3, type: "bad" },
+            { text: "🍦 Угостил мороженым: -1 монета", deltaMoney: -1, type: "bad" },
+            { text: "🎁 Подарок от бабушки: +2 монеты", deltaMoney: 2, type: "good" },
+            { text: "🧸 Купил игрушку в подарок: -3 монеты, получил жетон Дружбы", type: "choiceGift" },
+            { text: "🏆 Получил грамоту за финансовую грамотность: +1 жетон Мудрость", type: "tokenWise" }
+        ],
+        fairRules: {
+            requireTokens: 3,
+            returnToStart: true,
+            startCellIndex: 0
+        }
+    };
 
-    // Звуки (используем простые HTML Audio с dataURI)
-    const successSound = new Audio("data:audio/wav;base64,U3RlYWx0aCBzdWNjZXNz");
-    const errorSound = new Audio("data:audio/wav;base64,RXJyb3Igc291bmQ=");
-    // На случай, если браузер не поддерживает, создадим фоллбек через Web Audio
     function playSound(type) {
         try {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -443,30 +531,24 @@
         } catch(e) { console.log("Audio not supported"); }
     }
 
-    // ---------- Игровые константы ----------
-    const BOARD_CELLS = [
-        { name: "🏛️ Гильдия мастеров", type: "guild" },
-        { name: "🛒 Лавка Хочу/Надо", type: "shop" },
-        { name: "🏦 Хранилище Сберкова", type: "bank" },
-        { name: "🐷 Фабрика мечты", type: "dream" },
-        { name: "🎲 Вихрь сюрпризов", type: "surprise" },
-        { name: "🏛️ Гильдия мастеров", type: "guild" },
-        { name: "🛒 Лавка Хочу/Надо", type: "shop" },
-        { name: "🏦 Хранилище Сберкова", type: "bank" },
-        { name: "🐷 Фабрика мечты", type: "dream" },
-        { name: "🎲 Вихрь сюрпризов", type: "surprise" },
-        { name: "🏛️ Гильдия мастеров", type: "guild" },
-        { name: "🎪 Ярмарка талантов", type: "fair" }
-    ];
+    async function showDiceAnimation(rollValue) {
+        return new Promise(resolve => {
+            const container = document.createElement('div');
+            container.className = 'dice-container';
+            container.innerHTML = `
+                <div class="dice">🎲</div>
+                <div class="dice-number">${rollValue}</div>
+            `;
+            document.body.appendChild(container);
+            playSound("success");
+            setTimeout(() => {
+                container.remove();
+                resolve();
+            }, 700);
+        });
+    }
 
-    const DREAM_TARGETS = [
-        { name: "Велосипед", cost: 25 },
-        { name: "Планшет", cost: 40 },
-        { name: "Робот-игрушка", cost: 30 },
-        { name: "Аквапарк", cost: 35 }
-    ];
-
-    // ---------- Игровой движок (с таймером) ----------
+    // ---------- Игровой движок ----------
     class GameController {
         constructor(playersArray, cells) {
             this.players = playersArray.map((p, idx) => ({
@@ -491,9 +573,7 @@
             this.turnTimeSeconds = 60;
         }
 
-        getCurrentPlayer() {
-            return this.players[this.currentTurn];
-        }
+        getCurrentPlayer() { return this.players[this.currentTurn]; }
 
         startTurnTimer() {
             this.stopTurnTimer();
@@ -504,10 +584,7 @@
             if (!timerElement) return;
             timerElement.innerText = `⏱️ ${timeLeft}с`;
             this.timer = setInterval(() => {
-                if (!this.gameActive || this.waitingForAction || this.getCurrentPlayer().isBot) {
-                    // если бот или уже в действии — не обновляем
-                    return;
-                }
+                if (!this.gameActive || this.waitingForAction || this.getCurrentPlayer().isBot) return;
                 timeLeft--;
                 timerElement.innerText = `⏱️ ${timeLeft}с`;
                 if (timeLeft <= 0) {
@@ -520,10 +597,7 @@
         }
 
         stopTurnTimer() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
+            if (this.timer) clearInterval(this.timer);
             const timerElement = document.getElementById("timerDisplay");
             if (timerElement) timerElement.innerText = "";
         }
@@ -542,23 +616,29 @@
         async rollAndMove() {
             if (this.waitingForAction) return false;
             const player = this.getCurrentPlayer();
-            if (player.hasFinished) {
-                this.nextTurn();
-                return false;
-            }
+            if (player.hasFinished) { this.nextTurn(); return false; }
             this.stopTurnTimer();
             const roll = Math.floor(Math.random() * 6) + 1;
+            await showDiceAnimation(roll);
             let newPos = player.position + roll;
             if (newPos >= this.cells.length) newPos = this.cells.length - 1;
             player.position = newPos;
             const cell = this.cells[newPos];
             this.waitingForAction = true;
             await this.triggerCellAction(player, cell);
-            if (cell.type === "fair" && player.tokens.length >= 3 && !player.hasFinished) {
-                player.hasFinished = true;
-                this.winner = player;
-                this.gameActive = false;
-                return true;
+            if (cell.type === "fair") {
+                const uniqueTokens = [...new Set(player.tokens)];
+                if (uniqueTokens.length >= GAME_CONFIG.fairRules.requireTokens && !player.hasFinished) {
+                    player.hasFinished = true;
+                    this.winner = player;
+                    this.gameActive = false;
+                    return true;
+                } else if (GAME_CONFIG.fairRules.returnToStart) {
+                    player.position = GAME_CONFIG.fairRules.startCellIndex;
+                    const detailsDiv = document.getElementById("actionDetails");
+                    detailsDiv.innerHTML += `<p>⚠️ У вас недостаточно жетонов (${player.tokens.length}/${GAME_CONFIG.fairRules.requireTokens})! Вы вернулись на старт.</p>`;
+                    await new Promise(r => setTimeout(r, 1500));
+                }
             }
             this.nextTurn();
             return true;
@@ -580,28 +660,21 @@
             });
         }
 
-        // --- Действия (с звуками) ---
         guildAction(player, container, done) {
-            const professions = ["👩‍🍳 Повар", "🎨 Художник", "👷 Строитель"];
-            const taskMap = {
-                "👩‍🍳 Повар": "Изобрази приготовление бутерброда! (пантомима)",
-                "🎨 Художник": "Нарисуй монетку с закрытыми глазами",
-                "👷 Строитель": "Построй башню из 5 кубиков (воображение)"
-            };
             if (player.isBot) {
-                const prof = professions[Math.floor(Math.random() * professions.length)];
+                const prof = GAME_CONFIG.guildProfessions[Math.floor(Math.random() * GAME_CONFIG.guildProfessions.length)];
                 player.money += 5;
                 if (!player.tokens.includes("Мастер")) player.tokens.push("Мастер");
-                container.innerHTML = `<p>🤖 ${player.name} выбрал ${prof} и получил +5 монет и жетон «Мастер»!</p>`;
+                container.innerHTML = `<p>🤖 ${player.name} выбрал ${prof.name} и получил +5 монет и жетон «Мастер»!</p>`;
                 setTimeout(() => done(), 1500);
             } else {
-                container.innerHTML = `<h4>🏆 Гильдия мастеров</h4><p>Выбери профессию и выполни задание:</p>`;
-                professions.forEach(prof => {
+                container.innerHTML = `<h4>🏆 Гильдия мастеров</h4><p>Выбери задание и выполни его:</p>`;
+                GAME_CONFIG.guildProfessions.forEach(prof => {
                     let btn = document.createElement("button");
-                    btn.innerText = prof;
+                    btn.innerText = prof.name;
                     btn.style.margin = "8px";
                     btn.onclick = () => {
-                        alert(`Задание: ${taskMap[prof]}\n(попроси ведущего оценить!)`);
+                        alert(`Задание: ${prof.task}\n(попроси ведущего оценить!)`);
                         player.money += 5;
                         if (!player.tokens.includes("Мастер")) player.tokens.push("Мастер");
                         container.innerHTML = `<p>✅ +5 монет, получен жетон «Мастер»! У вас ${player.money}💰</p>`;
@@ -614,13 +687,8 @@
         }
 
         shopAction(player, container, done) {
-            const goods = [
-                { name: "🥖 Хлеб (Надо)", cost: 2, need: true },
-                { name: "🎫 Проездной (Надо)", cost: 3, need: true },
-                { name: "🧸 Плюшевый мишка (Хочу)", cost: 5, need: false }
-            ];
             if (player.isBot) {
-                // ... логика бота (без изменений)
+                const goods = GAME_CONFIG.shopGoods;
                 const isHard = this.difficulty === "hard";
                 const isEasy = this.difficulty === "easy";
                 let chosen = null;
@@ -653,7 +721,7 @@
                 setTimeout(() => done(), 1500);
             } else {
                 container.innerHTML = `<h4>🛒 Лавка «Хочу и Надо»</h4><p>Выбери ОДИН товар:</p>`;
-                goods.forEach(g => {
+                GAME_CONFIG.shopGoods.forEach(g => {
                     let btn = document.createElement("button");
                     btn.innerText = `${g.name} — ${g.cost}💰`;
                     btn.style.margin = "8px";
@@ -692,14 +760,16 @@
                 }
                 setTimeout(() => done(), 1200);
             } else {
-                container.innerHTML = `<h4>🏦 Загадка Сберкова</h4><p>«Что можно купить, но нельзя продать?»</p>`;
+                const riddle = GAME_CONFIG.bankRiddles[Math.floor(Math.random() * GAME_CONFIG.bankRiddles.length)];
+                container.innerHTML = `<h4>🏦 Загадка Сберкова</h4><p>${riddle.question}</p>`;
                 const answerBtn = document.createElement("button");
                 answerBtn.innerText = "Ответить";
                 answerBtn.onclick = () => {
-                    let ans = prompt("Твой ответ:", "здоровье");
-                    if (ans && ans.toLowerCase().includes("здоровье")) {
+                    let ans = prompt("Введите ответ:").trim().toLowerCase();
+                    if (riddle.answers.some(a => ans === a.toLowerCase())) {
                         player.bankMoney += 1;
-                        container.innerHTML = `<p>✨ Верно! +1 монета в банк. На счету: ${player.bankMoney}💰</p>`;
+                        if (!player.tokens.includes("Мудрость")) player.tokens.push("Мудрость");
+                        container.innerHTML = `<p>✨ Верно! +1 монета в банк и жетон «Мудрость». На счету: ${player.bankMoney}💰</p>`;
                         playSound("success");
                         setTimeout(() => done(), 1200);
                     } else {
@@ -732,7 +802,7 @@
         dreamAction(player, container, done) {
             if (player.isBot) {
                 if (!player.dreamTarget) {
-                    const target = DREAM_TARGETS[Math.floor(Math.random() * DREAM_TARGETS.length)];
+                    const target = GAME_CONFIG.dreamTargets[Math.floor(Math.random() * GAME_CONFIG.dreamTargets.length)];
                     player.dreamTarget = target;
                     player.dreamFund = 0;
                 }
@@ -757,10 +827,9 @@
                 }
                 setTimeout(() => done(), 1500);
             } else {
-                // ... человеческая версия (без изменений)
                 if (!player.dreamTarget) {
                     container.innerHTML = `<h4>🐷 Фабрика мечты</h4><p>Выбери мечту:</p>`;
-                    DREAM_TARGETS.forEach(d => {
+                    GAME_CONFIG.dreamTargets.forEach(d => {
                         let btn = document.createElement("button");
                         btn.innerText = `${d.name} (${d.cost}💰)`;
                         btn.onclick = () => {
@@ -812,8 +881,7 @@
         }
 
         surpriseAction(player, container, done) {
-            // Выбираем случайное событие из расширяемого конфига
-            let ev = SURPRISE_EVENTS[Math.floor(Math.random() * SURPRISE_EVENTS.length)];
+            let ev = GAME_CONFIG.surpriseEvents[Math.floor(Math.random() * GAME_CONFIG.surpriseEvents.length)];
             if (player.isBot) {
                 if (ev.type === "good") {
                     player.money += ev.deltaMoney;
@@ -822,8 +890,7 @@
                     player.money = Math.max(0, player.money + ev.deltaMoney);
                     container.innerHTML = `<p>🤖 ${player.name}: ${ev.text} Осталось ${player.money}💰</p>`;
                 } else if (ev.type === "choice") {
-                    const hasToken = player.tokens.includes("Дружба");
-                    if (player.money >= 2 && !hasToken && Math.random() < 0.5) {
+                    if (player.money >= 2 && !player.tokens.includes("Дружба") && Math.random() < 0.5) {
                         player.money -= 2;
                         player.tokens.push("Дружба");
                         container.innerHTML = `<p>🤖 ${player.name} помог другу! Получен жетон Дружбы</p>`;
@@ -838,6 +905,9 @@
                     } else {
                         container.innerHTML = `<p>🤖 ${player.name} не купил подарок.</p>`;
                     }
+                } else if (ev.type === "tokenWise") {
+                    if (!player.tokens.includes("Мудрость")) player.tokens.push("Мудрость");
+                    container.innerHTML = `<p>🤖 ${player.name} получил жетон Мудрость!</p>`;
                 }
                 setTimeout(() => done(), 1500);
             } else {
@@ -888,21 +958,27 @@
                         setTimeout(() => done(), 1200);
                     };
                     container.appendChild(giftBtn);
+                } else if (ev.type === "tokenWise") {
+                    if (!player.tokens.includes("Мудрость")) player.tokens.push("Мудрость");
+                    container.innerHTML = `<p>🏅 Получен жетон Мудрость!</p>`;
+                    playSound("success");
+                    setTimeout(() => done(), 1200);
                 }
             }
         }
 
         fairAction(player, container, done) {
             container.innerHTML = `<h4>🎪 Ярмарка талантов</h4><p>Проверка твоих жетонов...</p>`;
-            if (player.tokens.length >= 3 && !player.hasFinished) {
+            const uniqueTokens = [...new Set(player.tokens)];
+            if (uniqueTokens.length >= GAME_CONFIG.fairRules.requireTokens && !player.hasFinished) {
                 player.hasFinished = true;
-                container.innerHTML += `<p>🏆 Ты собрал 3 жетона и прибыл на Ярмарку! ПОБЕДА!</p>`;
+                container.innerHTML += `<p>🏆 Ты собрал ${uniqueTokens.length} разных жетонов и прибыл на Ярмарку! ПОБЕДА!</p>`;
                 this.winner = player;
                 this.gameActive = false;
                 playSound("success");
                 done();
             } else {
-                container.innerHTML += `<p>У тебя ${player.tokens.length}/3 жетонов. Собери больше и возвращайся!</p>`;
+                container.innerHTML += `<p>У тебя ${uniqueTokens.length}/${GAME_CONFIG.fairRules.requireTokens} разных жетонов. Собери больше и возвращайся!</p>`;
                 playSound("error");
                 setTimeout(() => done(), 1500);
             }
@@ -915,9 +991,7 @@
             if (this.players.every(p => p.hasFinished)) this.gameActive = false;
             renderGameUI(this);
             const nextPlayer = this.getCurrentPlayer();
-            if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished) {
-                this.startTurnTimer();
-            }
+            if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished) this.startTurnTimer();
             if (this.gameActive && nextPlayer.isBot && !this.waitingForAction) {
                 document.getElementById("botMessage").innerHTML = `🤖 Ход бота ${nextPlayer.name}...`;
                 setTimeout(async () => {
@@ -939,12 +1013,11 @@
         }
     }
 
-    // --- Отрисовка UI ---
     function renderGameUI(engine) {
         if (!engine) return;
         const boardDiv = document.getElementById("boardContainer");
         boardDiv.innerHTML = "";
-        BOARD_CELLS.forEach((cell, idx) => {
+        GAME_CONFIG.boardCells.forEach((cell, idx) => {
             let div = document.createElement("div");
             div.className = "cell";
             if (engine.players.some(p => p.position === idx)) div.classList.add("active");
@@ -962,7 +1035,7 @@
         engine.players.forEach(p => {
             let card = document.createElement("div");
             card.className = "player-card";
-            card.innerHTML = `<b>${p.name}${p.isBot ? ' 🤖' : ' 👤'}</b> 💰${p.money}  🏦${p.bankMoney}<br>🎖️жетоны: ${p.tokens.join(", ") || "—"}<br>📍${BOARD_CELLS[p.position].name}`;
+            card.innerHTML = `<b>${p.name}${p.isBot ? ' 🤖' : ' 👤'}</b> 💰${p.money}  🏦${p.bankMoney}<br>🎖️жетоны: ${p.tokens.join(", ") || "—"}<br>📍${GAME_CONFIG.boardCells[p.position].name}`;
             listDiv.appendChild(card);
         });
         const cur = engine.getCurrentPlayer();
@@ -984,7 +1057,7 @@
         const playerName = document.getElementById("playerName").value.trim() || "Хранитель";
         const players = [{ name: playerName, isBot: false }];
         for (let i = 0; i < botCount; i++) players.push({ name: `Бот ${i+1}`, isBot: true });
-        const game = new GameController(players, BOARD_CELLS);
+        const game = new GameController(players, GAME_CONFIG.boardCells);
         game.difficulty = difficulty;
         activeGame = game;
         document.getElementById("setupPanel").style.display = "none";
@@ -1029,7 +1102,6 @@
         } else alert("Сейчас нельзя бросить кубик");
     });
 
-    // Табы
     const slider = document.getElementById("slider");
     const btns = document.querySelectorAll(".toggle button");
     const homeTab = document.getElementById("homeTab");
@@ -1039,7 +1111,8 @@
         btn.addEventListener("click", () => {
             btns.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            slider.style.left = (idx * 25) + "%";
+            const percent = (idx / btns.length) * 100;
+            slider.style.left = percent + "%";
             if(btn.dataset.tab === "home") { homeTab.classList.add("active"); gameTab.classList.remove("active"); contactsTab.classList.remove("active"); }
             else if(btn.dataset.tab === "game") { gameTab.classList.add("active"); homeTab.classList.remove("active"); contactsTab.classList.remove("active"); }
             else { contactsTab.classList.add("active"); homeTab.classList.remove("active"); gameTab.classList.remove("active"); }
