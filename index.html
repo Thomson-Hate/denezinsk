@@ -408,7 +408,6 @@
             color: #1e1e2a;
         }
 
-        /* ========== стили для обучающего меню ========== */
         .tutorial-overlay {
             position: fixed;
             top: 0;
@@ -515,19 +514,18 @@
 <div id="homeTab" class="tab-block active">
     <div class="glass-card">
         <h2>🎲 Тайна Золотого Дракона</h2>
-        <p>Добро пожаловать в город Денежкинск! Помогите жителям навести порядок в финансах, собирайте жетоны мудрости и станьте Почётным гражданином. <br> <strong>Цель:</strong> первым собрать 3 или 5 разных жетонов («Мастер», «Заботливый», «Мечтатель», «Дружба», «Мудрость») и добраться до «Ярмарки талантов».</p>
+        <p>Добро пожаловать в город Денежкинск! Помогите жителям навести порядок в финансах, собирайте жетоны мудрости и станьте Почётным гражданином. <br> <strong>Цель:</strong> собрать нужное количество разных жетонов («Мастер», «Заботливый», «Мечтатель», «Дружба», «Мудрость») и добраться до «Ярмарки талантов».</p>
     </div>
     <div class="glass-card">
-        <h3>📜 Как играть (одиночный режим)</h3>
-        <p>• Выберите режим: короткий (3 жетона, 12 клеток) или длинный (5 жетонов, 24 клетки).<br>
-        • Выберите количество ботов (1–3) и уровень сложности.<br>
+        <h3>📜 Как играть</h3>
+        <p>• Выберите уровень сложности. От него зависят количество клеток, стартовый капитал, множитель наград и число необходимых жетонов.<br>
         • Ваша задача — обыграть компьютерных соперников, накапливая жетоны и быстрее всех добраться до финиша.<br>
         • Ходите по очереди, бросайте кубик и принимайте финансовые решения.<br>
         • На ход даётся 60 секунд. На ответ на вопрос — 120 секунд.<br>
         • Боты действуют автоматически в зависимости от сложности.<br>
         • Если у вас кончились деньги — вы банкрот и пропускаете 3 хода, затем возвращаетесь на старт с 5 монетами (жетоны сохраняются).<br>
         • Если вы попали на Ярмарку, но у вас меньше нужного количества разных жетонов — возвращайтесь на старт и продолжайте путь!<br>
-        • Первый, кто соберёт нужное количество разных жетонов и попадёт на «Ярмарку талантов», побеждает!</p>
+        • Побеждает тот, кто соберёт нужное количество разных жетонов и попадёт на «Ярмарку талантов».</p>
     </div>
 </div>
 
@@ -535,10 +533,13 @@
     <div class="glass-card" id="setupPanel">
         <h2>🏆 Новая игра</h2>
         <div class="setup-group">
-            <label>🎲 Режим:</label>
-            <select id="gameMode">
-                <option value="short">Короткий (3 жетона, 12 клеток)</option>
-                <option value="long">Длинный (5 жетонов, 24 клетки)</option>
+            <label>⚙️ Сложность:</label>
+            <select id="difficultySelect">
+                <option value="light">🌱 Лёгкая (2 жетона, +25% наград, 150💰)</option>
+                <option value="normal">⭐ Обычная (3 жетона, стандарт, 100💰)</option>
+                <option value="medium">⚡ Средняя (3 жетона, -25% наград, 75💰)</option>
+                <option value="hard">🔥 Сложная (4 жетона, -50% наград, 50💰)</option>
+                <option value="extreme">💀 Экстрим (5 жетонов, -75% наград, 25💰)</option>
             </select>
         </div>
         <div class="setup-group">
@@ -547,14 +548,6 @@
                 <option value="1">1 бот</option>
                 <option value="2" selected>2 бота</option>
                 <option value="3">3 бота</option>
-            </select>
-        </div>
-        <div class="setup-group">
-            <label>🎯 Сложность:</label>
-            <select id="difficulty">
-                <option value="easy">Легко (боты часто ошибаются)</option>
-                <option value="medium" selected>Средне (сбалансированно)</option>
-                <option value="hard">Сложно (боты умные)</option>
             </select>
         </div>
         <div class="setup-group">
@@ -589,24 +582,26 @@
 
 <footer>© Денежкинск · Учимся управлять мечтами</footer>
 
-<!-- Обучающее меню -->
 <div id="tutorialOverlay" class="tutorial-overlay">
     <div class="tutorial-card">
         <h2>🎓 Как играть в «Денежкинск»</h2>
         <div class="tutorial-section">
-            <h3>🎲 Выбранный режим и сложность</h3>
+            <h3>⚙️ Выбранная сложность</h3>
             <p><strong>Режим:</strong> <span id="tutorialMode"></span></p>
-            <p><strong>Сложность:</strong> <span id="tutorialDifficulty"></span></p>
+            <p><strong>Стартовый капитал:</strong> <span id="tutorialStartMoney"></span>💰</p>
+            <p><strong>Множитель наград:</strong> <span id="tutorialMultiplier"></span></p>
+            <p><strong>Клеток на поле:</strong> <span id="tutorialCells"></span></p>
+            <p><strong>Нужно разных жетонов:</strong> <span id="tutorialTokensNeeded"></span></p>
             <p><strong>Ботов:</strong> <span id="tutorialBots"></span></p>
             <p><strong>Ваше имя:</strong> <span id="tutorialPlayerName"></span></p>
         </div>
         <div class="tutorial-section">
             <h3>🏆 Цель игры</h3>
-            <p>Собрать <strong id="tutorialTokensNeeded">3</strong> разных жетона и первым добраться до финишной клетки «Ярмарка талантов».</p>
+            <p>Собрать <strong id="tutorialTokensNeededGoal"></strong> разных жетонов и первым добраться до финишной клетки «Ярмарка талантов».</p>
         </div>
         <div class="tutorial-section">
             <h3>🗺️ Клетки на поле</h3>
-            <p><span class="cell-badge">🏛️ Гильдия мастеров</span> – выполните экономическое задание, получите +5 монет и жетон «Мастер».</p>
+            <p><span class="cell-badge">🏛️ Гильдия мастеров</span> – выполните экономическое задание, получите монеты и жетон «Мастер».</p>
             <p><span class="cell-badge">🛒 Лавка Хочу/Надо</span> – покупайте необходимое (Надо) для жетона «Заботливый» или желаемое (Хочу) просто так.</p>
             <p><span class="cell-badge">🏦 Хранилище Сберкова</span> – отгадайте загадку и получите жетон «Мудрость» +1 монету в банк. Или просто положите деньги на счёт – каждый раунд начисляются проценты.</p>
             <p><span class="cell-badge">🐷 Фабрика мечты</span> – откладывайте деньги на выбранную мечту. Когда накопите, получите жетон «Мечтатель».</p>
@@ -618,7 +613,6 @@
             <p>• На ход даётся 60 секунд, на ответ на вопрос – 120 секунд.</p>
             <p>• Если у вас закончились деньги – вы банкрот, пропускаете 3 хода, затем возвращаетесь на старт с 5 монетами (жетоны сохраняются).</p>
             <p>• Боты играют сами, их ум зависит от выбранной сложности.</p>
-            <p>• В коротком режиме начальный капитал 100 монет, награды увеличены в 1,5 раза. В длинном – 200 монет, награды увеличены в 2 раза.</p>
         </div>
         <div class="tutorial-button">
             <button id="startGameConfirmed">🚀 Приступить!</button>
@@ -627,79 +621,68 @@
 </div>
 
 <script>
-    // ========== Весь игровой код (без изменений) ==========
-    const GAME_CONFIG = {
-        baseCellTypes: [
+    // ========== Конфигурация сложностей (скорректированная) ==========
+    const DIFFICULTY_CONFIG = {
+        light: {
+            name: "Лёгкая",
+            cellsTotal: 12,
+            startMoney: 150,
+            rewardMultiplier: 1.25,
+            tokensNeeded: 2
+        },
+        normal: {
+            name: "Обычная",
+            cellsTotal: 12,
+            startMoney: 100,
+            rewardMultiplier: 1.0,
+            tokensNeeded: 3
+        },
+        medium: {
+            name: "Средняя",
+            cellsTotal: 18,
+            startMoney: 75,
+            rewardMultiplier: 0.75,
+            tokensNeeded: 3
+        },
+        hard: {
+            name: "Сложная",
+            cellsTotal: 24,
+            startMoney: 50,
+            rewardMultiplier: 0.5,
+            tokensNeeded: 4
+        },
+        extreme: {
+            name: "Экстрим",
+            cellsTotal: 36,
+            startMoney: 25,
+            rewardMultiplier: 0.25,
+            tokensNeeded: 5
+        }
+    };
+
+    // Генерация поля по заданному количеству клеток (включая финиш)
+    function generateBoardCellsByTotal(totalCells) {
+        const baseTypes = [
             { type: "guild", name: "🏛️ Гильдия мастеров", desc: "Здесь вы можете получить жетон «Мастер», выполнив экономическое задание." },
             { type: "shop", name: "🛒 Лавка Хочу/Надо", desc: "Покупайте необходимое (Надо) или желаемое (Хочу). За покупку Надо даётся жетон «Заботливый»." },
             { type: "bank", name: "🏦 Хранилище Сберкова", desc: "Отгадайте загадку или положите деньги на счёт. За правильный ответ получите жетон «Мудрость»." },
             { type: "dream", name: "🐷 Фабрика мечты", desc: "Копите на мечту! Когда накопите достаточно, получите жетон «Мечтатель»." },
             { type: "surprise", name: "🎲 Вихрь сюрпризов", desc: "Случайное событие. Может принести монеты или жетон Дружбы." }
-        ],
-        displayCounts: { guild: 1, shop: 3, bank: 1, dream: 1, surprise: 1 },
-        guildTasks: [
-            { name: "🧮 Экономический логист", task: "Посчитай свои деньги: сколько у тебя всего? (деньги в руке + деньги в банке)", correct: (p) => p.money + p.bankMoney },
-            { name: "📊 Финансовый аналитик", task: "Сколько процентов от твоих денег составляют 2 монеты? (округли до целого)", correct: (p) => Math.round((2 / p.money) * 100) },
-            { name: "💰 Кассир", task: "Сколько монет нужно добавить до 20?", correct: (p) => 20 - p.money },
-            { name: "📈 Инвестор", task: "Твои деньги выросли на 10%. Сколько у тебя станет? (округли вниз)", correct: (p) => Math.floor(p.money * 1.1) },
-            { name: "🛍️ Шопоголик", task: "Если ты купишь товар за 6 монет и заплатишь 10, сколько сдачи получишь?", correct: () => 4 },
-            { name: "🏦 Банкир", task: "Ты положил в банк 8 монет, а через год банк добавил 20% от вклада. Сколько стало?", correct: () => 10 },
-            { name: "📅 Бюджетник", task: "Ты получаешь 12 монет в месяц, тратишь 7. Сколько останется за 3 месяца?", correct: () => 15 },
-            { name: "🍕 Ресторатор", task: "Пицца стоит 15 монет, у тебя 40. Сколько пицц можно купить и сколько сдачи останется?", correct: (p) => ({ num: Math.floor(40/15), rest: 40%15 }) },
-            { name: "🎁 Подарочный эксперт", task: "У тебя 23 монеты. Хочешь купить другу подарок за 8 монет и себе шоколадку за 5. Хватит ли денег?", correct: () => true },
-            { name: "📉 Финансист", task: "Твои деньги уменьшились на 15%, было 20 монет. Сколько стало?", correct: () => 17 },
-            { name: "📝 Сметчик", task: "Стоимость школьных принадлежностей: ручка 2, тетрадь 3, пенал 7. Сколько нужно денег, чтобы купить всё?", correct: () => 12 },
-            { name: "💸 Тратильщик", task: "У тебя 30 монет. Ты потратил 12 в магазине и 5 в кафе. Сколько осталось?", correct: () => 13 },
-            { name: "💰 Копилка", task: "В копилке 15 монет. Каждый день ты добавляешь по 3 монеты. Сколько будет через 4 дня?", correct: () => 27 },
-            { name: "📈 Акционер", task: "Ты купил акции за 20 монет, они выросли на 25%. Сколько они стоят теперь?", correct: () => 25 },
-            { name: "🏦 Депозит", task: "Банк даёт 10% годовых. Сколько будет через год, если положить 50 монет?", correct: () => 55 },
-            { name: "🧮 Менеджер", task: "У тебя 45 монет. Раздели их поровну между тремя друзьями. Сколько получит каждый?", correct: () => 15 },
-            { name: "📊 Аналитик", task: "Ты заработал 24 монеты за 4 дня. Сколько монет в день в среднем?", correct: () => 6 },
-            { name: "💰 Экономист", task: "Сколько будет 8 + 7 × 2?", correct: () => 22 },
-            { name: "📈 Брокер", task: "Курс монеты вырос с 10 до 12. На сколько процентов вырос курс?", correct: () => 20 },
-            { name: "🎯 Целитель", task: "Тебе нужно накопить 100 монет. Уже есть 35. Сколько ещё нужно?", correct: () => 65 },
-            { name: "🛒 Покупатель", task: "В магазине скидка 20% на товар за 25 монет. Сколько стоит товар со скидкой?", correct: () => 20 },
-            { name: "💳 Кредитор", task: "Ты взял в долг 12 монет и вернул 15. Сколько процентов переплаты?", correct: () => 25 },
-            { name: "📉 Инфляция", task: "Цены выросли на 10%, а твоя зарплата была 30. Чтобы купить столько же, сколько раньше, какая зарплата нужна?", correct: () => 33 },
-            { name: "🏦 Вкладчик", task: "Вклад 80 монет под 5% годовых. Сколько процентов принесёт за год?", correct: () => 4 },
-            { name: "📝 Бухгалтер", task: "Сложи все цифры: 5, 8, 3, 7, 2.", correct: () => 25 }
-        ],
-        shopGoods: [
-            { name: "🥖 Хлеб (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🎫 Проездной (Надо)", cost: 3, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🧸 Плюшевый мишка (Хочу)", cost: 5, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "📚 Книга (Надо)", cost: 4, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🍦 Мороженое (Хочу)", cost: 2, need: false, desc: "Желаемый товар. Жетон не даёт." },
-            { name: "🥛 Молоко (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🍎 Яблоки (Надо)", cost: 3, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
-            { name: "🎮 Игровая приставка (Хочу)", cost: 15, need: false, desc: "Желаемый товар. Жетон не даёт." }
-        ],
-        bankRiddles: [
-            { question: "Что можно купить, но нельзя продать?", options: ["здоровье", "игрушку", "книгу", "еду"], correct: "здоровье" },
-            { question: "Что дороже всего на свете?", options: ["здоровье", "золото", "бриллианты", "дом"], correct: "здоровье" },
-            { question: "Что не купишь ни за какие деньги?", options: ["здоровье", "время", "счастье", "дружбу"], correct: ["здоровье","время","счастье","дружбу"] },
-            { question: "Какая монета самая крупная в обиходе?", options: ["10 рублей", "5 рублей", "2 рубля", "1 рубль"], correct: "10 рублей" },
-            { question: "Как называются деньги, которые откладывают на будущее?", options: ["сбережения", "расходы", "доходы", "налоги"], correct: "сбережения" },
-            { question: "Что такое инфляция?", options: ["рост цен", "падение цен", "безработица", "налоги"], correct: "рост цен" }
-        ],
-        dreamTargets: [
-            { name: "Велосипед", cost: 25 }, { name: "Планшет", cost: 40 }, { name: "Робот-игрушка", cost: 30 },
-            { name: "Аквапарк", cost: 35 }, { name: "Настольная игра", cost: 20 }, { name: "Самокат", cost: 18 }
-        ],
-        surpriseEvents: [
-            { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
-            { text: "💥 Сломался рюкзак: -2 монеты", deltaMoney: -2, type: "bad" },
-            { text: "📚 Выиграл в лотерею: +5 монет!", deltaMoney: 5, type: "good" },
-            { text: "🚌 Проездной закончился: -1 монета", deltaMoney: -1, type: "bad" },
-            { text: "🤝 Помоги другу: отдай 2 монеты или потеряй жетон Дружбы", type: "choice" },
-            { text: "🎉 Нашёл клад: +4 монеты", deltaMoney: 4, type: "good" },
-            { text: "💸 Заплатил налог: -3 монеты", deltaMoney: -3, type: "bad" },
-            { text: "🍦 Угостил мороженым: -1 монета", deltaMoney: -1, type: "bad" },
-            { text: "🎁 Подарок от бабушки: +2 монеты", deltaMoney: 2, type: "good" },
-            { text: "🧸 Купил игрушку в подарок: -3 монеты, получил жетон Дружбы", type: "choiceGift" },
-            { text: "🏆 Получил грамоту за финансовую грамотность: +1 жетон Мудрость", type: "tokenWise" }
-        ]
-    };
+        ];
+        const regularCount = totalCells - 1;
+        let allRegular = [];
+        while (allRegular.length < regularCount) {
+            allRegular.push(...baseTypes);
+        }
+        allRegular = allRegular.slice(0, regularCount);
+        for (let i = allRegular.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allRegular[i], allRegular[j]] = [allRegular[j], allRegular[i]];
+        }
+        const cells = allRegular.map(cell => ({ name: cell.name, type: cell.type, desc: cell.desc }));
+        cells.push({ name: "🎪 Ярмарка талантов", type: "fair", desc: "Финиш. Побеждает тот, кто набрал нужное количество разных жетонов. Если жетонов меньше — возвращаетесь на старт." });
+        return cells;
+    }
 
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
@@ -707,20 +690,6 @@
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }
         return arr;
-    }
-
-    function generateBoardCells(mode) {
-        const baseTypes = GAME_CONFIG.baseCellTypes;
-        const repeats = mode === 'short' ? 2 : 4;
-        let allCells = [];
-        for (let i = 0; i < repeats; i++) {
-            let shuffledTypes = shuffleArray([...baseTypes]);
-            for (let type of shuffledTypes) {
-                allCells.push({ name: type.name, type: type.type, desc: type.desc });
-            }
-        }
-        allCells.push({ name: "🎪 Ярмарка талантов", type: "fair", desc: "Финиш. Побеждает тот, кто набрал нужное количество разных жетонов. Если жетонов меньше — возвращаетесь на старт." });
-        return allCells;
     }
 
     function playSound(type) {
@@ -757,10 +726,10 @@
     }
 
     class GameController {
-        constructor(playersArray, cells, requireTokens, mode) {
+        constructor(playersArray, cells, requireTokens, startMoney, rewardMultiplier) {
             this.players = playersArray.map((p, idx) => ({
                 id: idx, name: p.name, isBot: p.isBot || false,
-                money: mode === 'short' ? 100 : 200,
+                money: startMoney,
                 position: 0, tokens: [], dreamFund: 0, dreamTarget: null,
                 bankMoney: 0, hasFinished: false, skipTurns: 0
             }));
@@ -775,20 +744,12 @@
             this.turnTimeSeconds = 60;
             this.questionTimeSeconds = 120;
             this.requireTokens = requireTokens;
-            this.mode = mode;
+            this.rewardMultiplier = rewardMultiplier;
         }
 
         getCurrentPlayer() { return this.players[this.currentTurn]; }
-
         getUniqueTokensCount(player) { return new Set(player.tokens).size; }
-
-        getRewardMultiplier() {
-            return this.mode === 'short' ? 1.5 : 2.0;
-        }
-
-        getReward(amount) {
-            return Math.floor(amount * this.getRewardMultiplier());
-        }
+        getReward(amount) { return Math.floor(amount * this.rewardMultiplier); }
 
         checkBankruptcy(player, delta, container) {
             if (player.money <= 0 && delta < 0 && player.skipTurns === 0) {
@@ -879,6 +840,15 @@
             if (this.waitingForAction) return false;
             const player = this.getCurrentPlayer();
             if (player.hasFinished) { this.nextTurn(); return false; }
+            if (player.money <= 0 && player.skipTurns === 0) {
+                player.skipTurns = 3;
+                const detailsDiv = document.getElementById("actionDetails");
+                detailsDiv.innerHTML = `<p>💸 ${player.name} обанкротился! Пропускает 3 хода, затем вернётся на старт с 5 монетами.</p>`;
+                playSound("error");
+                await new Promise(r => setTimeout(r, 1500));
+                this.nextTurn();
+                return false;
+            }
             if (player.skipTurns > 0) {
                 const detailsDiv = document.getElementById("actionDetails");
                 detailsDiv.innerHTML = `<p>⏳ ${player.name} банкрот, пропускает ход (осталось пропусков: ${player.skipTurns})</p>`;
@@ -952,13 +922,20 @@
         }
 
         guildAction(player, container, done) {
-            const tasks = GAME_CONFIG.guildTasks;
+            const tasks = [
+                { name: "🧮 Экономический логист", task: "Посчитай свои деньги: сколько у тебя всего? (деньги в руке + деньги в банке)", correct: (p) => p.money + p.bankMoney },
+                { name: "📊 Финансовый аналитик", task: "Сколько процентов от твоих денег составляют 2 монеты? (округли до целого)", correct: (p) => Math.round((2 / p.money) * 100) },
+                { name: "💰 Кассир", task: "Сколько монет нужно добавить до 20?", correct: (p) => 20 - p.money },
+                { name: "📈 Инвестор", task: "Твои деньги выросли на 10%. Сколько у тебя станет? (округли вниз)", correct: (p) => Math.floor(p.money * 1.1) },
+                { name: "🛍️ Шопоголик", task: "Если ты купишь товар за 6 монет и заплатишь 10, сколько сдачи получишь?", correct: () => 4 },
+                { name: "🏦 Банкир", task: "Ты положил в банк 8 монет, а через год банк добавил 20% от вклада. Сколько стало?", correct: () => 10 },
+                { name: "📅 Бюджетник", task: "Ты получаешь 12 монет в месяц, тратишь 7. Сколько останется за 3 месяца?", correct: () => 15 },
+                { name: "🍕 Ресторатор", task: "Пицца стоит 15 монет, у тебя 40. Сколько пицц можно купить и сколько сдачи останется?", correct: (p) => ({ num: Math.floor(40/15), rest: 40%15 }) },
+                { name: "🎁 Подарочный эксперт", task: "У тебя 23 монеты. Хочешь купить другу подарок за 8 монет и себе шоколадку за 5. Хватит ли денег?", correct: () => true }
+            ];
             const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
             let correctValue = randomTask.correct(player);
             if (player.isBot) {
-                let botAnswer = correctValue;
-                if (typeof correctValue === 'object') botAnswer = `${correctValue.num} пиццы, ${correctValue.rest} сдачи`;
-                if (randomTask.name.includes("Подарочный эксперт")) botAnswer = correctValue ? "да" : "нет";
                 if (Math.random() < (this.difficulty === 'easy' ? 0.5 : (this.difficulty === 'hard' ? 0.9 : 0.7))) {
                     player.money += this.getReward(5);
                     this.addUniqueToken(player, "Мастер");
@@ -1005,7 +982,15 @@
         }
 
         shopAction(player, container, done) {
-            const allGoods = GAME_CONFIG.shopGoods;
+            const allGoods = [
+                { name: "🥖 Хлеб (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
+                { name: "🎫 Проездной (Надо)", cost: 3, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
+                { name: "🧸 Плюшевый мишка (Хочу)", cost: 5, need: false, desc: "Желаемый товар. Жетон не даёт." },
+                { name: "📚 Книга (Надо)", cost: 4, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
+                { name: "🍦 Мороженое (Хочу)", cost: 2, need: false, desc: "Желаемый товар. Жетон не даёт." },
+                { name: "🥛 Молоко (Надо)", cost: 2, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." },
+                { name: "🍎 Яблоки (Надо)", cost: 3, need: true, desc: "Необходимый товар. Получите жетон «Заботливый»." }
+            ];
             const shuffled = shuffleArray([...allGoods]);
             const selectedGoods = shuffled.slice(0, 3);
             if (player.isBot) {
@@ -1072,7 +1057,14 @@
         }
 
         bankAction(player, container, done) {
-            const riddles = GAME_CONFIG.bankRiddles;
+            const riddles = [
+                { question: "Что можно купить, но нельзя продать?", options: ["здоровье", "игрушку", "книгу", "еду"], correct: "здоровье" },
+                { question: "Что дороже всего на свете?", options: ["здоровье", "золото", "бриллианты", "дом"], correct: "здоровье" },
+                { question: "Что не купишь ни за какие деньги?", options: ["здоровье", "время", "счастье", "дружбу"], correct: ["здоровье","время","счастье","дружбу"] },
+                { question: "Какая монета самая крупная в обиходе?", options: ["10 рублей", "5 рублей", "2 рубля", "1 рубль"], correct: "10 рублей" },
+                { question: "Как называются деньги, которые откладывают на будущее?", options: ["сбережения", "расходы", "доходы", "налоги"], correct: "сбережения" },
+                { question: "Что такое инфляция?", options: ["рост цен", "падение цен", "безработица", "налоги"], correct: "рост цен" }
+            ];
             const randomRiddle = riddles[Math.floor(Math.random() * riddles.length)];
             if (player.isBot) {
                 let amount = 0;
@@ -1120,7 +1112,10 @@
                                     player.bankMoney += val;
                                     container.innerHTML += `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
                                     playSound("success");
-                                } else { container.innerHTML += `<p>❌ Не вышло. Ход окончен.</p>`; playSound("error"); }
+                                } else { 
+                                    container.innerHTML += `<p>❌ Не вышло. Ход окончен.</p>`;
+                                    playSound("error");
+                                }
                                 setTimeout(() => done(), 1000);
                             };
                             container.appendChild(input);
@@ -1136,8 +1131,12 @@
         }
 
         dreamAction(player, container, done) {
+            const dreamTargets = [
+                { name: "Велосипед", cost: 25 }, { name: "Планшет", cost: 40 }, { name: "Робот-игрушка", cost: 30 },
+                { name: "Аквапарк", cost: 35 }, { name: "Настольная игра", cost: 20 }, { name: "Самокат", cost: 18 }
+            ];
             if (player.isBot) {
-                if (!player.dreamTarget) player.dreamTarget = GAME_CONFIG.dreamTargets[Math.floor(Math.random() * GAME_CONFIG.dreamTargets.length)];
+                if (!player.dreamTarget) player.dreamTarget = dreamTargets[Math.floor(Math.random() * dreamTargets.length)];
                 let needed = player.dreamTarget.cost - player.dreamFund;
                 let maxToSave = Math.min(player.money, needed);
                 let saveAmount = 0;
@@ -1167,7 +1166,7 @@
                         this.waitingForAction = false;
                         done();
                     });
-                    GAME_CONFIG.dreamTargets.forEach(d => {
+                    dreamTargets.forEach(d => {
                         let btn = document.createElement('button');
                         btn.innerText = `${d.name} (${d.cost}💰)`;
                         btn.onclick = () => {
@@ -1221,7 +1220,20 @@
         }
 
         surpriseAction(player, container, done) {
-            let ev = GAME_CONFIG.surpriseEvents[Math.floor(Math.random() * GAME_CONFIG.surpriseEvents.length)];
+            const events = [
+                { text: "🍀 Нашёл 3 монеты!", deltaMoney: 3, type: "good" },
+                { text: "💥 Сломался рюкзак: -2 монеты", deltaMoney: -2, type: "bad" },
+                { text: "📚 Выиграл в лотерею: +5 монет!", deltaMoney: 5, type: "good" },
+                { text: "🚌 Проездной закончился: -1 монета", deltaMoney: -1, type: "bad" },
+                { text: "🤝 Помоги другу: отдай 2 монеты или потеряй жетон Дружбы", type: "choice" },
+                { text: "🎉 Нашёл клад: +4 монеты", deltaMoney: 4, type: "good" },
+                { text: "💸 Заплатил налог: -3 монеты", deltaMoney: -3, type: "bad" },
+                { text: "🍦 Угостил мороженым: -1 монета", deltaMoney: -1, type: "bad" },
+                { text: "🎁 Подарок от бабушки: +2 монеты", deltaMoney: 2, type: "good" },
+                { text: "🧸 Купил игрушку в подарок: -3 монеты, получил жетон Дружбы", type: "choiceGift" },
+                { text: "🏆 Получил грамоту за финансовую грамотность: +1 жетон Мудрость", type: "tokenWise" }
+            ];
+            let ev = events[Math.floor(Math.random() * events.length)];
             if (player.isBot) {
                 if (ev.type === "good") { player.money += ev.deltaMoney; container.innerHTML += `<p>🤖 ${player.name}: ${ev.text} Теперь у него ${player.money}💰</p>`; }
                 else if (ev.type === "bad") { player.money = Math.max(0, player.money + ev.deltaMoney); container.innerHTML += `<p>🤖 ${player.name}: ${ev.text} Осталось ${player.money}💰</p>`; }
@@ -1401,16 +1413,19 @@
     }
 
     let activeGame = null;
-    // Новая функция для запуска игры после туториала
     function startGameAfterTutorial() {
         if (!window._pendingGame) return;
-        const { mode, botCount, difficulty, playerName } = window._pendingGame;
+        const { difficultyKey, botCount, playerName } = window._pendingGame;
+        const cfg = DIFFICULTY_CONFIG[difficultyKey];
+        const boardCells = generateBoardCellsByTotal(cfg.cellsTotal);
         const players = [{ name: playerName, isBot: false }];
         for (let i = 0; i < botCount; i++) players.push({ name: `Бот ${i+1}`, isBot: true });
-        const boardCells = generateBoardCells(mode);
-        const requireTokens = mode === 'short' ? 3 : 5;
-        const game = new GameController(players, boardCells, requireTokens, mode);
-        game.difficulty = difficulty;
+        const game = new GameController(players, boardCells, cfg.tokensNeeded, cfg.startMoney, cfg.rewardMultiplier);
+        let botDifficulty = "medium";
+        if (difficultyKey === "light" || difficultyKey === "normal") botDifficulty = "easy";
+        else if (difficultyKey === "medium") botDifficulty = "medium";
+        else botDifficulty = "hard";
+        game.difficulty = botDifficulty;
         activeGame = game;
         document.getElementById("setupPanel").style.display = "none";
         document.getElementById("gameplayArea").style.display = "block";
@@ -1430,26 +1445,21 @@
         window._pendingGame = null;
     }
 
-    // Изменённая функция старта: показываем туториал
     function startSingleGame() {
-        const mode = document.getElementById("gameMode").value;
+        const difficultyKey = document.getElementById("difficultySelect").value;
         const botCount = parseInt(document.getElementById("botCount").value);
-        const difficulty = document.getElementById("difficulty").value;
         const playerName = document.getElementById("playerName").value.trim() || "Хранитель";
-
-        // Заполняем туториал
-        const modeText = mode === 'short' ? 'Короткий (3 жетона, 12 клеток)' : 'Длинный (5 жетонов, 24 клетки)';
-        const difficultyText = { easy: 'Лёгкая', medium: 'Средняя', hard: 'Сложная' }[difficulty];
-        document.getElementById("tutorialMode").innerText = modeText;
-        document.getElementById("tutorialDifficulty").innerText = difficultyText;
+        const cfg = DIFFICULTY_CONFIG[difficultyKey];
+        document.getElementById("tutorialMode").innerText = cfg.name;
+        document.getElementById("tutorialStartMoney").innerText = cfg.startMoney;
+        document.getElementById("tutorialMultiplier").innerText = (cfg.rewardMultiplier * 100).toFixed(0) + "%";
+        document.getElementById("tutorialCells").innerText = cfg.cellsTotal;
+        document.getElementById("tutorialTokensNeeded").innerText = cfg.tokensNeeded;
+        document.getElementById("tutorialTokensNeededGoal").innerText = cfg.tokensNeeded;
         document.getElementById("tutorialBots").innerText = botCount;
         document.getElementById("tutorialPlayerName").innerText = playerName;
-        document.getElementById("tutorialTokensNeeded").innerText = mode === 'short' ? '3' : '5';
 
-        // Сохраняем параметры
-        window._pendingGame = { mode, botCount, difficulty, playerName };
-
-        // Показываем туториал
+        window._pendingGame = { difficultyKey, botCount, playerName };
         const tutorial = document.getElementById("tutorialOverlay");
         tutorial.style.display = "flex";
     }
