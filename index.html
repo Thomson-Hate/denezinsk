@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Денежкинск · Финансовое приключение</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -281,6 +284,11 @@
             color: #ffc0c0;
             margin-top: 10px;
         }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #ffc857;
+        }
     </style>
 </head>
 <body>
@@ -311,7 +319,7 @@
     </div>
     <div class="glass-card">
         <h3>📜 Как играть</h3>
-        <p>• Создайте комнату и поделитесь кодом с друзьями (игра работает в пределах одного браузера, откройте несколько вкладок).<br>
+        <p>• Создайте комнату и поделитесь кодом с друзьями (игра работает на разных устройствах через интернет).<br>
         • Присоединяйтесь по коду, указав имя.<br>
         • Когда соберётся 2–4 игрока, создатель комнаты нажимает «Начать игру».<br>
         • Ходы синхронизируются между всеми игроками. Бросать кубик может только текущий игрок.<br>
@@ -319,9 +327,24 @@
     </div>
 </div>
 
-<!-- Вкладка игры (комната + геймплей) -->
+<!-- Вкладка игры -->
 <div id="gameTab" class="tab-block">
-    <div class="glass-card" id="lobbySection">
+    <div id="firebaseConfigPanel" class="glass-card" style="display: block;">
+        <h3>🔧 Настройка Firebase</h3>
+        <p>Для работы игры на разных устройствах необходимо настроить Firebase. <br> 
+        Создайте проект в <a href="https://console.firebase.google.com/" target="_blank" style="color:#ffc857;">Firebase Console</a>, включите Realtime Database и скопируйте конфигурацию в поля ниже:</p>
+        <input type="text" id="apiKey" placeholder="apiKey" style="width:100%; margin:8px 0;">
+        <input type="text" id="authDomain" placeholder="authDomain" style="width:100%; margin:8px 0;">
+        <input type="text" id="databaseURL" placeholder="databaseURL" style="width:100%; margin:8px 0;">
+        <input type="text" id="projectId" placeholder="projectId" style="width:100%; margin:8px 0;">
+        <input type="text" id="storageBucket" placeholder="storageBucket" style="width:100%; margin:8px 0;">
+        <input type="text" id="messagingSenderId" placeholder="messagingSenderId" style="width:100%; margin:8px 0;">
+        <input type="text" id="appId" placeholder="appId" style="width:100%; margin:8px 0;">
+        <button id="initFirebaseBtn">Подключиться к Firebase</button>
+        <div id="firebaseStatus" style="margin-top: 10px; color:#ffc857;"></div>
+    </div>
+
+    <div class="glass-card" id="lobbySection" style="display: none;">
         <h2>🏠 Игровая комната</h2>
         <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;">
             <input type="text" id="roomCodeInput" placeholder="Код комнаты" style="flex:1;">
@@ -337,6 +360,7 @@
         <button id="startGameBtn" style="display: none; margin-top: 20px;">🚀 Начать игру</button>
         <button id="leaveRoomBtn" class="leave-btn" style="display: none;">🚪 Покинуть комнату</button>
     </div>
+
     <div id="gameplayArea" style="display: none;">
         <div class="game-panel">
             <div id="boardContainer" class="board"></div>
@@ -363,27 +387,15 @@
 <footer>© Денежкинск · учимся управлять мечтами</footer>
 
 <script>
-    // ---------- Хранилище комнат ----------
-    const STORAGE_KEY = "denezhkinsk_rooms";
-    const GAME_STATE_KEY = "denezhkinsk_game_state";
-    let rooms = {};
-
-    function loadRooms() {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        rooms = stored ? JSON.parse(stored) : {};
-    }
-    function saveRooms() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(rooms));
-    }
-    loadRooms();
-
-    // Текущее состояние вкладки
+    // ---------- Глобальные переменные ----------
+    let database = null;
+    let currentRoomRef = null;
     let currentRoomCode = null;
     let currentPlayerName = null;
     let isRoomOwner = false;
     let activeGame = null;
-    let gameInterval = null; // для автообновления
-
+    let currentGameStateListener = null;
+    
     // Карта локаций
     const BOARD_CELLS = [
         { name: "🏛️ Гильдия мастеров", type: "guild" },
@@ -710,74 +722,61 @@
         }
     }
 
-    // Сохранение и загрузка игры из localStorage
-    function saveGameState(game) {
-        if (!game) return;
-        const state = {
+    // Сохранение игры в Firebase
+    function saveGameToFirebase(game) {
+        if (!currentRoomRef) return;
+        const gameData = {
             players: game.players,
             currentTurn: game.currentTurn,
             gameActive: game.gameActive,
             winner: game.winner,
-            waitingForAction: game.waitingForAction,
-            cells: game.cells
+            waitingForAction: game.waitingForAction
         };
-        localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
+        currentRoomRef.child('gameState').set(gameData);
     }
 
-    function loadGameState() {
-        const stored = localStorage.getItem(GAME_STATE_KEY);
-        if (!stored) return null;
-        const state = JSON.parse(stored);
-        const game = new GameController(state.players.map(p => ({ name: p.name })), BOARD_CELLS);
-        game.players = state.players;
-        game.currentTurn = state.currentTurn;
-        game.gameActive = state.gameActive;
-        game.winner = state.winner;
-        game.waitingForAction = state.waitingForAction;
-        return game;
+    // Загрузка игры из Firebase
+    function loadGameFromFirebase(snapshot) {
+        if (!snapshot.exists()) return;
+        const data = snapshot.val();
+        if (!data.players) return;
+        const game = new GameController(data.players.map(p => ({ name: p.name })), BOARD_CELLS);
+        game.players = data.players;
+        game.currentTurn = data.currentTurn;
+        game.gameActive = data.gameActive;
+        game.winner = data.winner;
+        game.waitingForAction = data.waitingForAction;
+        activeGame = game;
+        renderGameUI(activeGame);
     }
 
-    // Слушаем изменения localStorage для синхронизации
-    window.addEventListener("storage", (e) => {
-        if (e.key === STORAGE_KEY) {
-            loadRooms();
-            if (currentRoomCode && rooms[currentRoomCode]) {
-                updateRoomUI();
-            } else if (currentRoomCode && !rooms[currentRoomCode]) {
-                // комната удалена (например, создатель покинул)
-                resetLobby();
-                alert("Комната была закрыта создателем.");
-            }
-        } else if (e.key === GAME_STATE_KEY && activeGame) {
-            // Обновляем игру из хранилища, если она активна
-            const newGame = loadGameState();
-            if (newGame) {
-                activeGame = newGame;
-                renderGameUI(activeGame);
-            }
-        }
-    });
-
-    // ---------- Лобби ----------
-    function updateRoomUI() {
-        if (!currentRoomCode || !rooms[currentRoomCode]) {
+    // ---------- Лобби (Firebase) ----------
+    function updateRoomUI(roomData) {
+        if (!roomData) {
             document.getElementById("roomInfo").innerHTML = "";
             document.getElementById("roomPlayersList").innerHTML = "";
             document.getElementById("startGameBtn").style.display = "none";
             document.getElementById("leaveRoomBtn").style.display = "none";
             return;
         }
-        const room = rooms[currentRoomCode];
-        document.getElementById("roomInfo").innerHTML = `<p>🏠 Комната: <strong>${currentRoomCode}</strong> (создатель: ${room.owner})</p>`;
-        let playersHtml = `<h4>👥 Игроки (${room.players.length}/4):</h4>`;
-        room.players.forEach(p => {
+        const players = roomData.players || [];
+        const owner = roomData.owner;
+        document.getElementById("roomInfo").innerHTML = `<p>🏠 Комната: <strong>${currentRoomCode}</strong> (создатель: ${owner})</p>`;
+        let playersHtml = `<h4>👥 Игроки (${players.length}/4):</h4>`;
+        players.forEach(p => {
             playersHtml += `<div class="player-item">${p.name}`;
-            if (isRoomOwner && p.name !== room.owner) {
+            if (isRoomOwner && p.name !== owner) {
                 playersHtml += `<button class="kick-btn" data-name="${p.name}">Кик</button>`;
             }
             playersHtml += `</div>`;
         });
         document.getElementById("roomPlayersList").innerHTML = playersHtml;
+        if (isRoomOwner && players.length >= 2 && players.length <= 4) {
+            document.getElementById("startGameBtn").style.display = "inline-block";
+        } else {
+            document.getElementById("startGameBtn").style.display = "none";
+        }
+        document.getElementById("leaveRoomBtn").style.display = "inline-block";
         // Добавляем обработчики кика
         if (isRoomOwner) {
             document.querySelectorAll(".kick-btn").forEach(btn => {
@@ -787,128 +786,199 @@
                 });
             });
         }
-        if (isRoomOwner && room.players.length >= 2 && room.players.length <= 4) {
-            document.getElementById("startGameBtn").style.display = "inline-block";
-        } else {
-            document.getElementById("startGameBtn").style.display = "none";
-        }
-        document.getElementById("leaveRoomBtn").style.display = "inline-block";
     }
 
     function resetLobby() {
+        if (currentRoomRef) {
+            currentRoomRef.off();
+            currentRoomRef = null;
+        }
         currentRoomCode = null;
         currentPlayerName = null;
         isRoomOwner = false;
         activeGame = null;
-        document.getElementById("lobbySection").style.display = "block";
+        document.getElementById("lobbySection").style.display = "none";
         document.getElementById("gameplayArea").style.display = "none";
         document.getElementById("joinNameContainer").style.display = "none";
-        updateRoomUI();
-        localStorage.removeItem(GAME_STATE_KEY);
+        document.getElementById("lobbySection").style.display = "block";
+        document.getElementById("roomInfo").innerHTML = "";
+        document.getElementById("roomPlayersList").innerHTML = "";
     }
 
     function createRoom() {
         const code = Math.floor(1000 + Math.random() * 9000).toString();
         const ownerName = prompt("Введите ваше имя (создатель комнаты):", "Хозяин");
         if (!ownerName) return;
-        rooms[code] = {
+        const roomData = {
             owner: ownerName,
             players: [{ name: ownerName }],
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            gameStarted: false
         };
-        saveRooms();
-        currentRoomCode = code;
-        currentPlayerName = ownerName;
-        isRoomOwner = true;
-        updateRoomUI();
-        document.getElementById("joinNameContainer").style.display = "none";
+        database.ref('rooms/' + code).set(roomData).then(() => {
+            currentRoomCode = code;
+            currentPlayerName = ownerName;
+            isRoomOwner = true;
+            currentRoomRef = database.ref('rooms/' + code);
+            // Слушаем изменения комнаты
+            currentRoomRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    resetLobby();
+                    alert("Комната была удалена.");
+                    return;
+                }
+                updateRoomUI(data);
+                if (data.gameStarted && !activeGame && document.getElementById("gameplayArea").style.display !== "block") {
+                    // Игра начата, загружаем её
+                    document.getElementById("lobbySection").style.display = "none";
+                    document.getElementById("gameplayArea").style.display = "block";
+                    if (currentGameStateListener) currentGameStateListener.off();
+                    currentGameStateListener = currentRoomRef.child('gameState').on('value', loadGameFromFirebase);
+                }
+            });
+            document.getElementById("joinNameContainer").style.display = "none";
+            document.getElementById("lobbySection").style.display = "block";
+        }).catch(err => alert("Ошибка: " + err.message));
     }
 
     function joinRoom() {
         const code = document.getElementById("roomCodeInput").value.trim();
         if (!code) { alert("Введите код комнаты"); return; }
-        const room = rooms[code];
-        if (!room) { alert("Комната не найдена"); return; }
-        if (room.players.length >= 4) { alert("Комната полна"); return; }
-        document.getElementById("joinNameContainer").style.display = "block";
-        const confirmBtn = document.getElementById("confirmJoinBtn");
-        const nameInput = document.getElementById("joinPlayerName");
-        confirmBtn.onclick = () => {
-            const playerName = nameInput.value.trim();
-            if (!playerName) { alert("Введите имя"); return; }
-            if (room.players.some(p => p.name === playerName)) { alert("Имя уже занято в комнате"); return; }
-            room.players.push({ name: playerName });
-            saveRooms();
-            currentRoomCode = code;
-            currentPlayerName = playerName;
-            isRoomOwner = false;
-            updateRoomUI();
-            document.getElementById("joinNameContainer").style.display = "none";
-            nameInput.value = "";
-        };
+        database.ref('rooms/' + code).once('value').then(snapshot => {
+            const room = snapshot.val();
+            if (!room) { alert("Комната не найдена"); return; }
+            if (room.players.length >= 4) { alert("Комната полна"); return; }
+            document.getElementById("joinNameContainer").style.display = "block";
+            const confirmBtn = document.getElementById("confirmJoinBtn");
+            const nameInput = document.getElementById("joinPlayerName");
+            confirmBtn.onclick = () => {
+                const playerName = nameInput.value.trim();
+                if (!playerName) { alert("Введите имя"); return; }
+                if (room.players.some(p => p.name === playerName)) { alert("Имя уже занято в комнате"); return; }
+                const newPlayers = [...room.players, { name: playerName }];
+                database.ref('rooms/' + code).update({ players: newPlayers }).then(() => {
+                    currentRoomCode = code;
+                    currentPlayerName = playerName;
+                    isRoomOwner = false;
+                    currentRoomRef = database.ref('rooms/' + code);
+                    currentRoomRef.on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (!data) {
+                            resetLobby();
+                            alert("Комната была удалена.");
+                            return;
+                        }
+                        updateRoomUI(data);
+                        if (data.gameStarted && !activeGame && document.getElementById("gameplayArea").style.display !== "block") {
+                            document.getElementById("lobbySection").style.display = "none";
+                            document.getElementById("gameplayArea").style.display = "block";
+                            if (currentGameStateListener) currentGameStateListener.off();
+                            currentGameStateListener = currentRoomRef.child('gameState').on('value', loadGameFromFirebase);
+                        }
+                    });
+                    document.getElementById("joinNameContainer").style.display = "none";
+                    nameInput.value = "";
+                    document.getElementById("lobbySection").style.display = "block";
+                }).catch(err => alert("Ошибка: " + err.message));
+            };
+        }).catch(err => alert("Ошибка: " + err.message));
     }
 
     function kickPlayer(name) {
         if (!isRoomOwner) return;
-        const room = rooms[currentRoomCode];
-        if (!room) return;
-        room.players = room.players.filter(p => p.name !== name);
-        if (room.players.length === 0) {
-            delete rooms[currentRoomCode];
-        }
-        saveRooms();
-        // Если выгнали текущего игрока (в другой вкладке), он увидит изменение через storage
-        updateRoomUI();
+        database.ref('rooms/' + currentRoomCode).once('value').then(snapshot => {
+            const room = snapshot.val();
+            if (!room) return;
+            const newPlayers = room.players.filter(p => p.name !== name);
+            if (newPlayers.length === 0) {
+                database.ref('rooms/' + currentRoomCode).remove().then(() => resetLobby());
+            } else {
+                database.ref('rooms/' + currentRoomCode).update({ players: newPlayers });
+            }
+        });
     }
 
     function startGame() {
-        if (!currentRoomCode || !rooms[currentRoomCode]) return;
-        const room = rooms[currentRoomCode];
         if (!isRoomOwner) { alert("Только создатель комнаты может начать игру"); return; }
-        if (room.players.length < 2) { alert("Нужно минимум 2 игрока"); return; }
-        const playersObj = room.players.map((p, idx) => ({ id: idx, name: p.name }));
-        const game = new GameController(playersObj, BOARD_CELLS);
-        saveGameState(game);
-        // Переключаем все вкладки в игровой режим
-        document.getElementById("lobbySection").style.display = "none";
-        document.getElementById("gameplayArea").style.display = "block";
-        activeGame = game;
-        renderGameUI(activeGame);
+        database.ref('rooms/' + currentRoomCode).once('value').then(snapshot => {
+            const room = snapshot.val();
+            if (!room || room.players.length < 2) { alert("Нужно минимум 2 игрока"); return; }
+            const playersObj = room.players.map((p, idx) => ({ id: idx, name: p.name }));
+            const game = new GameController(playersObj, BOARD_CELLS);
+            const gameData = {
+                players: game.players,
+                currentTurn: game.currentTurn,
+                gameActive: game.gameActive,
+                winner: game.winner,
+                waitingForAction: game.waitingForAction
+            };
+            database.ref('rooms/' + currentRoomCode).update({ gameStarted: true, gameState: gameData }).then(() => {
+                document.getElementById("lobbySection").style.display = "none";
+                document.getElementById("gameplayArea").style.display = "block";
+                activeGame = game;
+                renderGameUI(activeGame);
+                if (currentGameStateListener) currentGameStateListener.off();
+                currentGameStateListener = currentRoomRef.child('gameState').on('value', loadGameFromFirebase);
+            });
+        });
     }
 
     function leaveRoom() {
-        if (currentRoomCode && rooms[currentRoomCode]) {
+        if (currentRoomCode) {
             if (isRoomOwner) {
-                delete rooms[currentRoomCode];
-                saveRooms();
+                database.ref('rooms/' + currentRoomCode).remove().then(() => resetLobby());
             } else {
-                const room = rooms[currentRoomCode];
-                room.players = room.players.filter(p => p.name !== currentPlayerName);
-                if (room.players.length === 0) delete rooms[currentRoomCode];
-                saveRooms();
+                database.ref('rooms/' + currentRoomCode).once('value').then(snapshot => {
+                    const room = snapshot.val();
+                    if (room) {
+                        const newPlayers = room.players.filter(p => p.name !== currentPlayerName);
+                        if (newPlayers.length === 0) {
+                            database.ref('rooms/' + currentRoomCode).remove().then(() => resetLobby());
+                        } else {
+                            database.ref('rooms/' + currentRoomCode).update({ players: newPlayers }).then(() => resetLobby());
+                        }
+                    } else {
+                        resetLobby();
+                    }
+                });
             }
+        } else {
+            resetLobby();
         }
-        resetLobby();
     }
 
-    // Автоматический уход при закрытии вкладки
-    window.addEventListener("beforeunload", () => {
-        if (currentRoomCode && rooms[currentRoomCode]) {
-            if (isRoomOwner) {
-                delete rooms[currentRoomCode];
-                saveRooms();
-            } else {
-                const room = rooms[currentRoomCode];
-                if (room) {
-                    room.players = room.players.filter(p => p.name !== currentPlayerName);
-                    if (room.players.length === 0) delete rooms[currentRoomCode];
-                    saveRooms();
-                }
-            }
+    // ---------- Инициализация Firebase ----------
+    function initFirebase(config) {
+        try {
+            firebase.initializeApp(config);
+            database = firebase.database();
+            document.getElementById("firebaseConfigPanel").style.display = "none";
+            document.getElementById("lobbySection").style.display = "block";
+            document.getElementById("firebaseStatus").innerHTML = "✅ Firebase подключена!";
+        } catch (e) {
+            document.getElementById("firebaseStatus").innerHTML = "❌ Ошибка подключения: " + e.message;
         }
-    });
+    }
 
-    // ---------- Обработчики UI ----------
+    document.getElementById("initFirebaseBtn").onclick = () => {
+        const config = {
+            apiKey: document.getElementById("apiKey").value,
+            authDomain: document.getElementById("authDomain").value,
+            databaseURL: document.getElementById("databaseURL").value,
+            projectId: document.getElementById("projectId").value,
+            storageBucket: document.getElementById("storageBucket").value,
+            messagingSenderId: document.getElementById("messagingSenderId").value,
+            appId: document.getElementById("appId").value
+        };
+        if (!config.apiKey || !config.databaseURL) {
+            alert("Заполните хотя бы apiKey и databaseURL");
+            return;
+        }
+        initFirebase(config);
+    };
+
+    // Обработчики UI
     document.getElementById("createRoomBtn").onclick = createRoom;
     document.getElementById("joinRoomBtn").onclick = joinRoom;
     document.getElementById("startGameBtn").onclick = startGame;
@@ -917,11 +987,10 @@
         resetLobby();
         document.getElementById("gameplayArea").style.display = "none";
         document.getElementById("lobbySection").style.display = "block";
-        localStorage.removeItem(GAME_STATE_KEY);
+        if (currentGameStateListener) currentGameStateListener.off();
     };
     document.getElementById("rollDiceBtn").addEventListener("click", async () => {
         if(activeGame && activeGame.gameActive && !activeGame.waitingForAction) {
-            // Проверяем, чей сейчас ход
             const currentPlayer = activeGame.getCurrentPlayer();
             if (currentPlayer.name !== currentPlayerName) {
                 alert("Сейчас не ваш ход!");
@@ -930,18 +999,9 @@
             await activeGame.rollAndMove();
             activeGame.applyEndRoundInterest();
             renderGameUI(activeGame);
-            saveGameState(activeGame);
+            saveGameToFirebase(activeGame);
         } else alert("Сейчас нельзя бросить кубик");
     });
-
-    // Проверка при загрузке: если есть активная игра в localStorage, загружаем её
-    const savedGame = loadGameState();
-    if (savedGame) {
-        activeGame = savedGame;
-        document.getElementById("lobbySection").style.display = "none";
-        document.getElementById("gameplayArea").style.display = "block";
-        renderGameUI(activeGame);
-    }
 
     // Табы
     const slider = document.getElementById("slider");
