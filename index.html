@@ -621,7 +621,7 @@
 </div>
 
 <script>
-    // ========== Конфигурация сложностей (скорректированная) ==========
+    // ========== Конфигурация сложностей ==========
     const DIFFICULTY_CONFIG = {
         light: {
             name: "Лёгкая",
@@ -660,7 +660,14 @@
         }
     };
 
-    // Генерация поля по заданному количеству клеток (включая финиш)
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
     function generateBoardCellsByTotal(totalCells) {
         const baseTypes = [
             { type: "guild", name: "🏛️ Гильдия мастеров", desc: "Здесь вы можете получить жетон «Мастер», выполнив экономическое задание." },
@@ -675,21 +682,10 @@
             allRegular.push(...baseTypes);
         }
         allRegular = allRegular.slice(0, regularCount);
-        for (let i = allRegular.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allRegular[i], allRegular[j]] = [allRegular[j], allRegular[i]];
-        }
+        shuffleArray(allRegular);
         const cells = allRegular.map(cell => ({ name: cell.name, type: cell.type, desc: cell.desc }));
         cells.push({ name: "🎪 Ярмарка талантов", type: "fair", desc: "Финиш. Побеждает тот, кто набрал нужное количество разных жетонов. Если жетонов меньше — возвращаетесь на старт." });
         return cells;
-    }
-
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
     }
 
     function playSound(type) {
