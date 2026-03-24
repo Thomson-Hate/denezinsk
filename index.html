@@ -21,6 +21,7 @@
             flex-direction: column;
         }
 
+        /* Анимированные буквы на фоне */
         .bg-letters {
             position: fixed;
             inset: 0;
@@ -43,6 +44,7 @@
             100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
         }
 
+        /* Прогресс-бар скролла */
         #scrollBar {
             position: fixed;
             top: 0;
@@ -54,9 +56,10 @@
             border-radius: 0 0 4px 0;
         }
 
+        /* Верхняя панель */
         .top-bar {
             position: fixed;
-            top: 12px;
+            top: 16px;
             left: 50%;
             transform: translateX(-50%);
             width: 94%;
@@ -75,6 +78,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         .top-bar.scrolled {
+            top: 8px;
             height: 58px;
             background: rgba(10, 10, 18, 0.85);
         }
@@ -87,6 +91,7 @@
             color: transparent;
         }
 
+        /* Переключатель вкладок */
         .toggle {
             position: relative;
             width: 320px;
@@ -126,6 +131,7 @@
             transition: left 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
+        /* Контейнеры и карточки */
         .container {
             width: 90%;
             max-width: 1100px;
@@ -159,6 +165,7 @@
             transition: 0.25s;
         }
 
+        /* Игровое поле */
         .game-panel {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 40px;
@@ -247,11 +254,12 @@
             margin-top: 20px;
         }
         footer {
-            margin-top: 40px;
+            margin-top: auto;
             padding: 20px;
             text-align: center;
             font-size: 0.8rem;
             border-top: 1px solid rgba(255,200,100,0.2);
+            background: rgba(0,0,0,0.3);
         }
         h2, h3 { color: #ffdd99; margin-bottom: 12px; }
         input, select {
@@ -275,6 +283,11 @@
             display: inline-block;
             margin: 4px;
         }
+        .leave-btn {
+            background: #aa2e2e80;
+            color: #ffc0c0;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -297,7 +310,7 @@
     </div>
 </div>
 
-<!-- главная вкладка -->
+<!-- Главная вкладка -->
 <div id="homeTab" class="tab-block active">
     <div class="glass-card">
         <h2>🎲 Тайна Золотого Дракона</h2>
@@ -305,7 +318,7 @@
     </div>
     <div class="glass-card">
         <h3>📜 Как играть</h3>
-        <p>• Создайте комнату и дайте код друзьям (или откройте в другой вкладке).<br>
+        <p>• Создайте комнату и поделитесь кодом с друзьями (игра работает в пределах одного браузера, для совместной игры откройте несколько вкладок).<br>
         • Присоединяйтесь по коду, указав имя.<br>
         • Когда соберётся 2–4 игрока, создатель комнаты нажимает «Начать игру».<br>
         • Кидайте кубик, выполняйте задания, копите деньги и жетоны.<br>
@@ -313,7 +326,7 @@
     </div>
 </div>
 
-<!-- вкладка игры (комната + геймплей) -->
+<!-- Вкладка игры (комната + геймплей) -->
 <div id="gameTab" class="tab-block">
     <div class="glass-card" id="lobbySection">
         <h2>🏠 Игровая комната</h2>
@@ -329,6 +342,7 @@
             <button id="confirmJoinBtn">Войти в комнату</button>
         </div>
         <button id="startGameBtn" style="display: none; margin-top: 20px;">🚀 Начать игру</button>
+        <button id="leaveRoomBtn" class="leave-btn" style="display: none;">🚪 Покинуть комнату</button>
     </div>
     <div id="gameplayArea" style="display: none;">
         <div class="game-panel">
@@ -339,11 +353,12 @@
                 <button id="rollDiceBtn" style="background: #ffaa33;">🎲 Бросить кубик</button>
                 <div id="actionDetails" style="margin-top: 16px;"></div>
             </div>
+            <button id="backToLobbyBtn" style="margin-top: 20px; background: #444;">🏠 Вернуться в лобби</button>
         </div>
     </div>
 </div>
 
-<!-- контакты -->
+<!-- Контакты -->
 <div id="contactsTab" class="tab-block">
     <div class="glass-card">
         <h3>📬 Контакты</h3>
@@ -355,28 +370,22 @@
 <footer>© Денежкинск · учимся управлять мечтами</footer>
 
 <script>
-    // ---------- ХРАНИЛИЩЕ КОМНАТ В localStorage ----------
+    // ---------- Хранилище комнат (localStorage) ----------
     const STORAGE_KEY = "denezhkinsk_rooms";
     let rooms = {};
 
     function loadRooms() {
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            rooms = JSON.parse(stored);
-        } else {
-            rooms = {};
-        }
+        rooms = stored ? JSON.parse(stored) : {};
     }
     function saveRooms() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(rooms));
     }
-
-    // Инициализация
     loadRooms();
 
-    // Текущая активная комната для этой вкладки
+    // Текущее состояние вкладки
     let currentRoomCode = null;
-    let currentPlayerName = null; // имя игрока, который присоединился в этой вкладке
+    let currentPlayerName = null;
     let isRoomOwner = false;
     let activeGame = null;
 
@@ -403,7 +412,7 @@
         { name: "Аквапарк", cost: 35 }
     ];
 
-    // ---------- GameController (без изменений, только добавлен метод для синхронизации) ----------
+    // ---------- Игровой движок ----------
     class GameController {
         constructor(playersArray, cells) {
             this.players = playersArray.map((p, idx) => ({
@@ -422,7 +431,6 @@
             this.gameActive = true;
             this.winner = null;
             this.waitingForAction = false;
-            this.pendingActionResolve = null;
         }
 
         getCurrentPlayer() {
@@ -438,9 +446,7 @@
             }
             const roll = Math.floor(Math.random() * 6) + 1;
             let newPos = player.position + roll;
-            if (newPos >= this.cells.length) {
-                newPos = this.cells.length - 1;
-            }
+            if (newPos >= this.cells.length) newPos = this.cells.length - 1;
             player.position = newPos;
             const cell = this.cells[newPos];
             this.waitingForAction = true;
@@ -455,9 +461,8 @@
             return true;
         }
 
-        async triggerCellAction(player, cell) {
+        triggerCellAction(player, cell) {
             return new Promise((resolve) => {
-                this.pendingActionResolve = resolve;
                 const detailsDiv = document.getElementById("actionDetails");
                 detailsDiv.style.display = "block";
                 switch (cell.type) {
@@ -530,8 +535,7 @@
             answerBtn.onclick = () => {
                 let ans = prompt("Твой ответ:", "здоровье");
                 if (ans && ans.toLowerCase().includes("здоровье")) {
-                    let bonus = 1;
-                    player.bankMoney += bonus;
+                    player.bankMoney += 1;
                     container.innerHTML = `<p>✨ Верно! +1 монета в банк. На счету: ${player.bankMoney}💰</p>`;
                 } else {
                     container.innerHTML = `<p>📖 Неверно, но ты можешь положить деньги в банк. Сколько?</p>`;
@@ -671,12 +675,11 @@
         }
 
         applyEndRoundInterest() {
-            for(let p of this.players) {
-                if(p.bankMoney > 0) p.bankMoney += 1;
-            }
+            for(let p of this.players) if(p.bankMoney > 0) p.bankMoney += 1;
         }
     }
 
+    // ---------- Отрисовка игры ----------
     function renderGameUI(engine) {
         const boardDiv = document.getElementById("boardContainer");
         boardDiv.innerHTML = "";
@@ -703,35 +706,46 @@
         });
         const cur = engine.getCurrentPlayer();
         document.getElementById("turnInfo").innerHTML = `🎲 Ход: ${cur.name} (монет: ${cur.money}💰 | жетоны: ${cur.tokens.length})`;
+        const rollBtn = document.getElementById("rollDiceBtn");
         if (!engine.gameActive && engine.winner) {
             document.getElementById("turnInfo").innerHTML = `🏆 ПОБЕДИТЕЛЬ: ${engine.winner.name}!!! 🏆`;
-            document.getElementById("rollDiceBtn").disabled = true;
+            rollBtn.disabled = true;
         } else {
-            document.getElementById("rollDiceBtn").disabled = false;
+            rollBtn.disabled = false;
         }
     }
 
-    // ---------- ЛОББИ: работа с комнатами ----------
+    // ---------- Лобби ----------
     function updateRoomUI() {
         if (!currentRoomCode || !rooms[currentRoomCode]) {
             document.getElementById("roomInfo").innerHTML = "";
             document.getElementById("roomPlayersList").innerHTML = "";
             document.getElementById("startGameBtn").style.display = "none";
+            document.getElementById("leaveRoomBtn").style.display = "none";
             return;
         }
         const room = rooms[currentRoomCode];
         document.getElementById("roomInfo").innerHTML = `<p>🏠 Комната: <strong>${currentRoomCode}</strong> (создатель: ${room.owner})</p>`;
         let playersHtml = `<h4>👥 Игроки (${room.players.length}/4):</h4>`;
-        room.players.forEach(p => {
-            playersHtml += `<span>${p.name}</span> `;
-        });
+        room.players.forEach(p => { playersHtml += `<span>${p.name}</span> `; });
         document.getElementById("roomPlayersList").innerHTML = playersHtml;
-        // Кнопка старта видна только владельцу
         if (isRoomOwner && room.players.length >= 2 && room.players.length <= 4) {
             document.getElementById("startGameBtn").style.display = "inline-block";
         } else {
             document.getElementById("startGameBtn").style.display = "none";
         }
+        document.getElementById("leaveRoomBtn").style.display = "inline-block";
+    }
+
+    function resetLobby() {
+        currentRoomCode = null;
+        currentPlayerName = null;
+        isRoomOwner = false;
+        activeGame = null;
+        document.getElementById("lobbySection").style.display = "block";
+        document.getElementById("gameplayArea").style.display = "none";
+        document.getElementById("joinNameContainer").style.display = "none";
+        updateRoomUI();
     }
 
     function createRoom() {
@@ -757,11 +771,9 @@
         const room = rooms[code];
         if (!room) { alert("Комната не найдена"); return; }
         if (room.players.length >= 4) { alert("Комната полна"); return; }
-        // Показать поле для имени
         document.getElementById("joinNameContainer").style.display = "block";
         const confirmBtn = document.getElementById("confirmJoinBtn");
         const nameInput = document.getElementById("joinPlayerName");
-        const oldHandler = confirmBtn.onclick;
         confirmBtn.onclick = () => {
             const playerName = nameInput.value.trim();
             if (!playerName) { alert("Введите имя"); return; }
@@ -774,7 +786,6 @@
             updateRoomUI();
             document.getElementById("joinNameContainer").style.display = "none";
             nameInput.value = "";
-            confirmBtn.onclick = oldHandler;
         };
     }
 
@@ -783,20 +794,40 @@
         const room = rooms[currentRoomCode];
         if (!isRoomOwner) { alert("Только создатель комнаты может начать игру"); return; }
         if (room.players.length < 2) { alert("Нужно минимум 2 игрока"); return; }
-        // Создаём игру
         const playersObj = room.players.map((p, idx) => ({ id: idx, name: p.name }));
         activeGame = new GameController(playersObj, BOARD_CELLS);
-        // Скрываем лобби, показываем игру
         document.getElementById("lobbySection").style.display = "none";
         document.getElementById("gameplayArea").style.display = "block";
         renderGameUI(activeGame);
         document.getElementById("rollDiceBtn").disabled = false;
     }
 
-    // Обработчики UI
+    function leaveRoom() {
+        if (currentRoomCode && rooms[currentRoomCode]) {
+            if (isRoomOwner) {
+                delete rooms[currentRoomCode];
+                saveRooms();
+            } else {
+                const room = rooms[currentRoomCode];
+                room.players = room.players.filter(p => p.name !== currentPlayerName);
+                if (room.players.length === 0) delete rooms[currentRoomCode];
+                saveRooms();
+            }
+        }
+        resetLobby();
+    }
+
+    // ---------- Обработчики ----------
     document.getElementById("createRoomBtn").onclick = createRoom;
     document.getElementById("joinRoomBtn").onclick = joinRoom;
     document.getElementById("startGameBtn").onclick = startGame;
+    document.getElementById("leaveRoomBtn").onclick = leaveRoom;
+    document.getElementById("backToLobbyBtn").onclick = () => {
+        resetLobby();
+        // Если игра была активна, просто скрываем игровую область
+        document.getElementById("gameplayArea").style.display = "none";
+        document.getElementById("lobbySection").style.display = "block";
+    };
     document.getElementById("rollDiceBtn").addEventListener("click", async () => {
         if(activeGame && activeGame.gameActive && !activeGame.waitingForAction) {
             await activeGame.rollAndMove();
