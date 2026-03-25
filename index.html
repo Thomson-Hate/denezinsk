@@ -1054,15 +1054,7 @@
         }
 
         bankAction(player, container, done) {
-            const riddles = [
-                { question: "Что можно купить, но нельзя продать?", options: ["здоровье", "игрушку", "книгу", "еду"], correct: "здоровье" },
-                { question: "Что дороже всего на свете?", options: ["здоровье", "золото", "бриллианты", "дом"], correct: "здоровье" },
-                { question: "Что не купишь ни за какие деньги?", options: ["здоровье", "время", "счастье", "дружбу"], correct: ["здоровье","время","счастье","дружбу"] },
-                { question: "Какая монета самая крупная в обиходе?", options: ["10 рублей", "5 рублей", "2 рубля", "1 рубль"], correct: "10 рублей" },
-                { question: "Как называются деньги, которые откладывают на будущее?", options: ["сбережения", "расходы", "доходы", "налоги"], correct: "сбережения" },
-                { question: "Что такое инфляция?", options: ["рост цен", "падение цен", "безработица", "налоги"], correct: "рост цен" }
-            ];
-            const randomRiddle = riddles[Math.floor(Math.random() * riddles.length)];
+            // Если это бот — оставляем старую логику (только вклад)
             if (player.isBot) {
                 let amount = 0;
                 if (this.difficulty === "hard") amount = Math.min(player.money, Math.floor(Math.random() * 7) + 2);
@@ -1074,57 +1066,171 @@
                     container.innerHTML += `<p>🤖 ${player.name} положил в банк ${amount} монет. На счету: ${player.bankMoney}</p>`;
                 } else container.innerHTML += `<p>🤖 ${player.name} ничего не положил в банк.</p>`;
                 setTimeout(() => done(), 1200);
-            } else {
-                container.innerHTML += `<p>🔮 Загадка: ${randomRiddle.question}</p>`;
-                const optionsDiv = document.createElement('div');
-                optionsDiv.className = 'options-buttons';
-                this.startQuestionTimer(container, done, () => {
-                    container.innerHTML += `<p>⏰ Время вышло! Ход пропущен.</p>`;
-                    this.waitingForAction = false;
-                    done();
-                });
-                randomRiddle.options.forEach(opt => {
-                    let btn = document.createElement('button');
-                    btn.innerText = opt;
-                    btn.onclick = () => {
-                        this.stopQuestionTimer();
-                        let correct = Array.isArray(randomRiddle.correct) ? randomRiddle.correct.includes(opt) : (opt === randomRiddle.correct);
-                        if (correct) {
-                            player.bankMoney += 1;
-                            this.addUniqueToken(player, "Мудрость");
-                            container.innerHTML += `<p>✨ Верно! +1 монета в банк и жетон «Мудрость». На счету: ${player.bankMoney}💰</p>`;
-                            playSound("success");
-                        } else {
-                            playSound("error");
-                            container.innerHTML += `<p>📖 Неверно. Правильный ответ: ${Array.isArray(randomRiddle.correct) ? randomRiddle.correct.join(", ") : randomRiddle.correct}.</p>`;
-                            let input = document.createElement("input");
-                            input.type = "number";
-                            input.placeholder = "сумма";
-                            let submit = document.createElement("button");
-                            submit.innerText = "Вложить";
-                            submit.onclick = () => {
-                                let val = parseInt(input.value);
-                                if (!isNaN(val) && val > 0 && player.money >= val) {
-                                    player.money -= val;
-                                    player.bankMoney += val;
-                                    container.innerHTML += `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
-                                    playSound("success");
-                                } else { 
-                                    container.innerHTML += `<p>❌ Не вышло. Ход окончен.</p>`;
-                                    playSound("error");
-                                }
-                                setTimeout(() => done(), 1000);
-                            };
-                            container.appendChild(input);
-                            container.appendChild(submit);
-                            return;
-                        }
-                        setTimeout(() => done(), 1200);
-                    };
-                    optionsDiv.appendChild(btn);
-                });
-                container.appendChild(optionsDiv);
+                return;
             }
+        
+            // Для игрока — показываем меню действий
+            container.innerHTML = `<div class="explanation">📖 ${this.cells.find(c => c.type === "bank")?.desc || "Хранилище Сберкова"}</div>
+                                   <p>💰 Ваши наличные: ${player.money} | 🏦 Счёт в банке: ${player.bankMoney}</p>`;
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options-buttons';
+        
+            // Кнопка загадки
+            const riddleBtn = document.createElement('button');
+            riddleBtn.innerText = "🧠 Отгадать загадку";
+            riddleBtn.onclick = () => {
+                optionsDiv.remove(); // убираем меню
+                this.startRiddle(player, container, done);
+            };
+            optionsDiv.appendChild(riddleBtn);
+        
+            // Кнопка снятия
+            const withdrawBtn = document.createElement('button');
+            withdrawBtn.innerText = "🏦 Снять деньги";
+            withdrawBtn.onclick = () => {
+                if (player.bankMoney <= 0) {
+                    container.innerHTML += `<p>❌ На счету нет денег!</p>`;
+                    playSound("error");
+                    setTimeout(() => done(), 1500);
+                    return;
+                }
+                container.innerHTML += `<p>Сколько снять? (до ${player.bankMoney} монет)</p>`;
+                const input = document.createElement('input');
+                input.type = "number";
+                input.min = 1;
+                input.max = player.bankMoney;
+                input.placeholder = "сумма";
+                const submit = document.createElement('button');
+                submit.innerText = "Снять";
+                submit.onclick = () => {
+                    let val = parseInt(input.value);
+                    if (!isNaN(val) && val > 0 && val <= player.bankMoney) {
+                        player.bankMoney -= val;
+                        player.money += val;
+                        container.innerHTML += `<p>✅ Снято ${val} монет. Теперь наличные: ${player.money}, на счету: ${player.bankMoney}</p>`;
+                        playSound("success");
+                        setTimeout(() => done(), 1500);
+                    } else {
+                        container.innerHTML += `<p>❌ Неверная сумма!</p>`;
+                        playSound("error");
+                        setTimeout(() => done(), 1500);
+                    }
+                };
+                container.appendChild(input);
+                container.appendChild(submit);
+            };
+            optionsDiv.appendChild(withdrawBtn);
+        
+            // Кнопка вложения
+            const depositBtn = document.createElement('button');
+            depositBtn.innerText = "💰 Положить деньги";
+            depositBtn.onclick = () => {
+                if (player.money <= 0) {
+                    container.innerHTML += `<p>❌ У вас нет наличных!</p>`;
+                    playSound("error");
+                    setTimeout(() => done(), 1500);
+                    return;
+                }
+                container.innerHTML += `<p>Сколько положить? (до ${player.money} монет)</p>`;
+                const input = document.createElement('input');
+                input.type = "number";
+                input.min = 1;
+                input.max = player.money;
+                input.placeholder = "сумма";
+                const submit = document.createElement('button');
+                submit.innerText = "Положить";
+                submit.onclick = () => {
+                    let val = parseInt(input.value);
+                    if (!isNaN(val) && val > 0 && val <= player.money) {
+                        player.money -= val;
+                        player.bankMoney += val;
+                        container.innerHTML += `<p>✅ Положено ${val} монет. Теперь наличные: ${player.money}, на счету: ${player.bankMoney}</p>`;
+                        playSound("success");
+                        setTimeout(() => done(), 1500);
+                    } else {
+                        container.innerHTML += `<p>❌ Неверная сумма!</p>`;
+                        playSound("error");
+                        setTimeout(() => done(), 1500);
+                    }
+                };
+                container.appendChild(input);
+                container.appendChild(submit);
+            };
+            optionsDiv.appendChild(depositBtn);
+        
+            // Кнопка завершения хода
+            const finishBtn = document.createElement('button');
+            finishBtn.innerText = "🚪 Завершить ход";
+            finishBtn.onclick = () => {
+                container.innerHTML += `<p>Вы покидаете банк без действий.</p>`;
+                setTimeout(() => done(), 1000);
+            };
+            optionsDiv.appendChild(finishBtn);
+        
+            container.appendChild(optionsDiv);
+        }
+        
+        // Вспомогательный метод для загадки (вынесен из основного)
+        startRiddle(player, container, done) {
+            const riddles = [
+                { question: "Что можно купить, но нельзя продать?", options: ["здоровье", "игрушку", "книгу", "еду"], correct: "здоровье" },
+                { question: "Что дороже всего на свете?", options: ["здоровье", "золото", "бриллианты", "дом"], correct: "здоровье" },
+                { question: "Что не купишь ни за какие деньги?", options: ["здоровье", "время", "счастье", "дружбу"], correct: ["здоровье","время","счастье","дружбу"] },
+                { question: "Какая монета самая крупная в обиходе?", options: ["10 рублей", "5 рублей", "2 рубля", "1 рубль"], correct: "10 рублей" },
+                { question: "Как называются деньги, которые откладывают на будущее?", options: ["сбережения", "расходы", "доходы", "налоги"], correct: "сбережения" },
+                { question: "Что такое инфляция?", options: ["рост цен", "падение цен", "безработица", "налоги"], correct: "рост цен" }
+            ];
+            const randomRiddle = riddles[Math.floor(Math.random() * riddles.length)];
+            container.innerHTML += `<p>🔮 Загадка: ${randomRiddle.question}</p>`;
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options-buttons';
+            this.startQuestionTimer(container, done, () => {
+                container.innerHTML += `<p>⏰ Время вышло! Ход пропущен.</p>`;
+                this.waitingForAction = false;
+                done();
+            });
+            randomRiddle.options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    this.stopQuestionTimer();
+                    let correct = Array.isArray(randomRiddle.correct) ? randomRiddle.correct.includes(opt) : (opt === randomRiddle.correct);
+                    if (correct) {
+                        player.bankMoney += 1;
+                        this.addUniqueToken(player, "Мудрость");
+                        container.innerHTML += `<p>✨ Верно! +1 монета в банк и жетон «Мудрость». На счету: ${player.bankMoney}💰</p>`;
+                        playSound("success");
+                        setTimeout(() => done(), 1200);
+                    } else {
+                        playSound("error");
+                        container.innerHTML += `<p>📖 Неверно. Правильный ответ: ${Array.isArray(randomRiddle.correct) ? randomRiddle.correct.join(", ") : randomRiddle.correct}.</p>`;
+                        container.innerHTML += `<p>💰 Вы можете вложить деньги в банк:</p>`;
+                        let input = document.createElement("input");
+                        input.type = "number";
+                        input.placeholder = "сумма";
+                        let submit = document.createElement("button");
+                        submit.innerText = "Вложить";
+                        submit.onclick = () => {
+                            let val = parseInt(input.value);
+                            if (!isNaN(val) && val > 0 && player.money >= val) {
+                                player.money -= val;
+                                player.bankMoney += val;
+                                container.innerHTML += `<p>💰 Вложено ${val} монет. Теперь в банке ${player.bankMoney}</p>`;
+                                playSound("success");
+                            } else { 
+                                container.innerHTML += `<p>❌ Не вышло. Ход окончен.</p>`;
+                                playSound("error");
+                            }
+                            setTimeout(() => done(), 1000);
+                        };
+                        container.appendChild(input);
+                        container.appendChild(submit);
+                        return;
+                    }
+                };
+                optionsDiv.appendChild(btn);
+            });
+            container.appendChild(optionsDiv);
         }
 
         dreamAction(player, container, done) {
