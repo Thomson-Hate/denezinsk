@@ -1352,12 +1352,33 @@
 
         processNextTurn() {
             const nextPlayer = this.getCurrentPlayer();
-            if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished && nextPlayer.skipTurns === 0) {
-                this.startTurnTimer();
+            if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished) {
+                // Автоматическое банкротство, если у игрока 0 монет и он ещё не банкрот
+                if (nextPlayer.money <= 0 && nextPlayer.skipTurns === 0) {
+                    nextPlayer.skipTurns = 3;
+                    const detailsDiv = document.getElementById("actionDetails");
+                    detailsDiv.innerHTML = `<p>💸 ${nextPlayer.name} обанкротился! Пропускает 3 хода, затем вернётся на старт с 5 монетами.</p>`;
+                    playSound("error");
+                    setTimeout(() => {
+                        if (this.gameActive && this.getCurrentPlayer().id === nextPlayer.id) {
+                            this.nextTurn(); // переходим к следующему ходу (обработка пропусков произойдёт в nextTurn)
+                        }
+                    }, 1500);
+                    return;
+                }
+                if (nextPlayer.skipTurns === 0) {
+                    this.startTurnTimer();
+                } else {
+                    // Если уже банкрот, просто пропускаем ход (уменьшение счётчика произойдёт в nextTurn)
+                    setTimeout(() => {
+                        if (this.gameActive && this.getCurrentPlayer().id === nextPlayer.id) {
+                            this.nextTurn();
+                        }
+                    }, 1500);
+                }
             }
             if (this.gameActive && nextPlayer.isBot && !this.waitingForAction) {
                 if (nextPlayer.skipTurns === 0) {
-                    // обычный ход бота
                     document.getElementById("botMessage").innerHTML = `🤖 Ход бота ${nextPlayer.name}...`;
                     setTimeout(async () => {
                         if (this.gameActive && !this.waitingForAction && this.getCurrentPlayer().id === nextPlayer.id && nextPlayer.skipTurns === 0) {
@@ -1369,12 +1390,10 @@
                         }
                     }, 800);
                 } else {
-                    // бот-банкрот пропускает ход — просто вызываем nextTurn, который сам уменьшит skipTurns
                     document.getElementById("botMessage").innerHTML = `🤖 ${nextPlayer.name} банкрот, пропускает ход (осталось пропусков: ${nextPlayer.skipTurns})...`;
                     setTimeout(() => {
                         if (this.gameActive && this.getCurrentPlayer().id === nextPlayer.id) {
-                            this.nextTurn(); // в nextTurn уже есть логика обработки skipTurns
-                            document.getElementById("botMessage").innerHTML = "";
+                            this.nextTurn(); // обработка пропусков произойдёт в nextTurn
                         }
                     }, 1500);
                 }
