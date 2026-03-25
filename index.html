@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Денежкинск · Финансовое приключение</title>
     <style>
+        /* (все стили без изменений, они такие же как в исходном коде) */
         * {
             margin: 0;
             padding: 0;
@@ -1331,9 +1332,12 @@
             this.stopTurnTimer();
             this.stopQuestionTimer();
             let current = this.getCurrentPlayer();
+            // Если у текущего игрока есть пропуски, обрабатываем их
             if (current.skipTurns > 0) {
                 current.skipTurns--;
-                if (current.skipTurns === 0) this.respawnPlayer(current);
+                if (current.skipTurns === 0) {
+                    this.respawnPlayer(current);
+                }
                 this.currentTurn = (this.currentTurn + 1) % this.players.length;
                 if (this.players.every(p => p.hasFinished)) this.gameActive = false;
                 renderGameUI(this);
@@ -1348,19 +1352,35 @@
 
         processNextTurn() {
             const nextPlayer = this.getCurrentPlayer();
-            if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished && nextPlayer.skipTurns === 0) this.startTurnTimer();
-            if (this.gameActive && nextPlayer.isBot && !this.waitingForAction && nextPlayer.skipTurns === 0) {
-                document.getElementById("botMessage").innerHTML = `🤖 Ход бота ${nextPlayer.name}...`;
-                setTimeout(async () => {
-                    if (this.gameActive && !this.waitingForAction && this.getCurrentPlayer().id === nextPlayer.id && nextPlayer.skipTurns === 0) {
-                        await this.rollAndMove();
-                        renderGameUI(this);
-                        this.applyEndRoundInterest();
-                        renderGameUI(this);
-                        document.getElementById("botMessage").innerHTML = "";
-                    }
-                }, 800);
-            } else document.getElementById("botMessage").innerHTML = "";
+            if (this.gameActive && !nextPlayer.isBot && !nextPlayer.hasFinished && nextPlayer.skipTurns === 0) {
+                this.startTurnTimer();
+            }
+            if (this.gameActive && nextPlayer.isBot && !this.waitingForAction) {
+                if (nextPlayer.skipTurns === 0) {
+                    // обычный ход бота
+                    document.getElementById("botMessage").innerHTML = `🤖 Ход бота ${nextPlayer.name}...`;
+                    setTimeout(async () => {
+                        if (this.gameActive && !this.waitingForAction && this.getCurrentPlayer().id === nextPlayer.id && nextPlayer.skipTurns === 0) {
+                            await this.rollAndMove();
+                            renderGameUI(this);
+                            this.applyEndRoundInterest();
+                            renderGameUI(this);
+                            document.getElementById("botMessage").innerHTML = "";
+                        }
+                    }, 800);
+                } else {
+                    // бот-банкрот пропускает ход — просто вызываем nextTurn, который сам уменьшит skipTurns
+                    document.getElementById("botMessage").innerHTML = `🤖 ${nextPlayer.name} банкрот, пропускает ход (осталось пропусков: ${nextPlayer.skipTurns})...`;
+                    setTimeout(() => {
+                        if (this.gameActive && this.getCurrentPlayer().id === nextPlayer.id) {
+                            this.nextTurn(); // в nextTurn уже есть логика обработки skipTurns
+                            document.getElementById("botMessage").innerHTML = "";
+                        }
+                    }, 1500);
+                }
+            } else {
+                document.getElementById("botMessage").innerHTML = "";
+            }
         }
 
         applyEndRoundInterest() { for(let p of this.players) if(p.bankMoney > 0) p.bankMoney += 1; }
